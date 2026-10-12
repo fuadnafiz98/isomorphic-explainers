@@ -8,6 +8,7 @@ import * as G from "../../kit/lathe.mjs";
 import * as A from "../../kit/audit.mjs";
 import { kitScript, latheScript } from "../../scripts/inline-kit.mjs";
 import * as M from "./model.mjs";
+import * as DG from "./diagrams.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2);
@@ -156,7 +157,7 @@ function station(j) {
   post(`${id}.knob`, X, POST_Y, 3.4, Z + 1, 3, { tone: "mid" }, {
     steps: 24,
     st: j,
-    extra: Ln(k.knurl(X, POST_Y, 3.4, Z + 1, Z + 4, 20, P), { tone: "lo" }) + Ln(k.lineOnTop([X - 2.2, POST_Y], [X + 3.4, POST_Y], Z + 4, P), { tone: "hi" }),
+    extra: Ln(k.knurl(X, POST_Y, 3.4, Z + 1, Z + 4, 20, P), { tone: "lo" }) + Ln(k.lineOnTop([X - 3.4, POST_Y], [X + 3.4, POST_Y], Z + 4, P), { tone: "hi" }),
   });
   slab(`${id}.arm`, { x: X - 3, y: POST_Y + 6, w: 6, d: -(POST_Y + 6) - 13.6, r: 1 }, Z - 4.5, 2.7, { tone: "mid" }, { steps: 3, st: j, extra: Dots([at([X, POST_Y + 9.5, Z - 1.8])], { size: 0.4 }) });
   // funnel and spout, turned about a vertical axis; s = 0 is the bottom of the spout
@@ -338,6 +339,112 @@ const LABEL =
   "A cascade of seven sieves on a bench, stepping down from a crowd tray on the left. Each sieve stands for one trait of a browser: request headers, screen, time zone, hardware, canvas, WebGL and audio. A lit ball, the visitor, rolls down a ramp from sieve to sieve; at each one a row of lamps counts the bits that trait removes from the crowd. A dial shows the bits so far and a vertical log scale shows how many people still look like the visitor. A selector switches between no protection, farbled values and uniform values.";
 const svg = k.figureSvg({ width: WIDTH, height: HEIGHT, label: LABEL, body: [back.join(""), groups, lampLayers, slider, needle, pointer, hit, ball] });
 
+// ───────────────────────────── the MacBook ─────────────────────────────
+function macbook() {
+  const W = 900;
+  const H = 440;
+  const phi = (12 * Math.PI) / 180;
+  const BASE = { x: -80, y: -55, w: 160, d: 110, r: 7 };
+  const hinge = [0, -55, 6];
+  const up = [0, -Math.sin(phi), Math.cos(phi)];
+  const normal = [0, Math.cos(phi), Math.sin(phi)];
+  const LID = { w: 160, h: 108 };
+  const fit = k.fitProjection(
+    [...k.boxCorners(BASE, -1, 6), [-80, hinge[1] + up[1] * LID.h, hinge[2] + up[2] * LID.h], [80, hinge[1] + up[1] * LID.h, hinge[2] + up[2] * LID.h]],
+    470,
+    H - 40,
+    { pad: 16, azimuth: 66, elevation: 24 },
+  );
+  const P2 = { ...fit, origin: [fit.origin[0] + 215, fit.origin[1] + 14] };
+  const q = (p) => k.iso(p, P2);
+  const onLid = (px, py) => q([hinge[0] + (px - LID.w / 2), hinge[1] + up[1] * (LID.h - py), hinge[2] + up[2] * (LID.h - py)]);
+  const out = [];
+  out.push(`<path class="iso-halo" d="${k.haloOf(BASE, -1, 6, P2)}"/>`);
+  // base and its deck
+  out.push(S(k.slabOf(BASE, 0, 5, P2, 6, 0.8), { tone: "mid", crease: "lo" }));
+  out.push(Ln(k.planOutline(k.insetPlan(BASE, 4), 5, P2, 5), { tone: "faint" }));
+  // keyboard: five rows of keys, drawn as outlined caps
+  const keys = [];
+  const KW = 8.7;
+  const KD = 7;
+  for (let row = 0; row < 5; row++) {
+    const cols = row === 4 ? 9 : 14;
+    const span = cols * (KW + 1.2) - 1.2;
+    for (let c = 0; c < cols; c++) {
+      const wide = row === 4 && c === 4;
+      const w = wide ? KW * 4 + 3.6 : KW;
+      if (row === 4 && c > 4 && c < 8) continue;
+      const x0 = row === 4 ? -span / 2 + c * (KW + 1.2) + (c > 4 ? KW * 3 + 3.6 : 0) : -span / 2 + c * (KW + 1.2);
+      keys.push(k.planOutline({ x: x0, y: -45 + row * (KD + 1.3), w, d: KD, r: 1.2 }, 5, P2, 2));
+    }
+  }
+  out.push(Ln(keys.join(""), { tone: "lo" }));
+  // trackpad
+  const pad = { x: -27, y: 14, w: 54, d: 33, r: 3.5 };
+  out.push(Ln(k.planOutline(pad, 5, P2, 4), { tone: "mid" }));
+  // speaker grilles either side of the keys
+  const grille = [];
+  for (const x of [-76.6, -73.2, 72.6, 76.0]) for (let r = 0; r < 11; r++) grille.push(q([x, -43 + r * 3.2, 5]));
+  out.push(Dots(grille, { size: 0.42, tone: "mid" }));
+  // x-ray of the chip under the keys
+  const chip = { x: -20, y: -26, w: 40, d: 24, r: 2 };
+  out.push(S(k.slabOf(chip, 5, 0.01, P2, 2), { tone: "lo", crease: "none", flat: true }));
+  out.push(`<path class="ln dashed" d="${k.planOutline(chip, 5.1, P2, 2)}" style="stroke-dasharray:3 2.5;stroke:var(--ink)"/>`);
+  out.push(Ln(k.planOutline(k.insetPlan(chip, 6), 5.1, P2, 2), { tone: "mid" }));
+  // hinge and lid
+  out.push(S(G.solidOf([[0, 2.1], [140, 2.1]], G.frameAlong([-70, -55, 6.2], [1, 0, 0]), P2), { tone: "lo", crease: "none" }));
+  const lidFrame = G.frameOf(hinge, normal, [1, 0, 0], up);
+  out.push(S(G.prismOf(lidFrame, [[-80, 0], [80, 0], [80, LID.h], [-80, LID.h]], -3, 0, P2), { tone: "mid", crease: "lo" }));
+  // the screen, drawn in the plane of the lid
+  const O = onLid(0, 0);
+  const X1 = onLid(1, 0);
+  const Y1 = onLid(0, 1);
+  const m = `matrix(${(X1[0] - O[0]).toFixed(3)} ${(X1[1] - O[1]).toFixed(3)} ${(Y1[0] - O[0]).toFixed(3)} ${(Y1[1] - O[1]).toFixed(3)} ${O[0].toFixed(2)} ${O[1].toFixed(2)})`;
+  const scr = [];
+  scr.push(`<rect class="box soft" x="0" y="0" width="160" height="108" rx="4"/>`);
+  scr.push(`<rect class="box" x="5" y="5" width="150" height="98" rx="1.5"/>`);
+  scr.push(`<circle class="solid" cx="80" cy="2.6" r="0.9"/>`);
+  scr.push(`<line class="ln" x1="5" y1="13" x2="155" y2="13" style="stroke-width:.5"/>`);
+  scr.push(`<circle class="solid" cx="10" cy="9" r="1.7"/>`);
+  scr.push(`<text class="lbl" x="16" y="10.6" style="font-size:4.6px">Chrome</text>`);
+  scr.push(`<text class="lbl" x="152" y="10.6" text-anchor="end" style="font-size:4.6px">Mon 09:12</text>`);
+  scr.push(`<rect class="box" x="14" y="19" width="132" height="78"/>`);
+  scr.push(`<line class="ln" x1="14" y1="28" x2="146" y2="28" style="stroke-width:.5"/>`);
+  [19, 23.5, 28].forEach((x) => scr.push(`<circle class="box" cx="${x}" cy="23.5" r="1.4" style="stroke-width:.5"/>`));
+  scr.push(`<rect class="box" x="38" y="20.5" width="74" height="6" rx="3" style="stroke-width:.5"/>`);
+  scr.push(`<text class="lbl-s" x="43" y="25" style="font-size:4px">news.example</text>`);
+  scr.push(`<rect class="solid" x="20" y="34" width="52" height="4.4"/>`);
+  scr.push(`<line class="ln2" x1="20" y1="44" x2="76" y2="44"/><line class="ln2" x1="20" y1="49" x2="70" y2="49"/>`);
+  scr.push(`<rect class="box" x="20" y="56" width="42" height="34"/><line class="guide" x1="20" y1="56" x2="62" y2="90"/><line class="guide" x1="62" y1="56" x2="20" y2="90"/>`);
+  scr.push(`<rect class="box dash" x="86" y="34" width="54" height="36" style="stroke-width:.6"/><text class="lbl-s" x="113" y="53" text-anchor="middle" style="font-size:4.4px">ad</text>`);
+  out.push(`<g transform="${m}">${scr.join("")}</g>`);
+  // callouts: a part, a probe
+  const labels = [
+    { n: 1, side: "L", y: 74, title: "display", sub: ["screen.width, height", "devicePixelRatio"], at: onLid(26, 78) },
+    { n: 5, side: "L", y: 196, title: "chip (x-ray)", sub: ["hardwareConcurrency", "WebGL renderer string"], at: q([-14, -18, 5.1]) },
+    { n: 4, side: "L", y: 318, title: "speakers", sub: ["OfflineAudioContext", "tiny float differences"], at: q([-75.5, -6, 5]) },
+    { n: 2, side: "R", y: 74, title: "browser", sub: ["User-Agent", "supported features"], at: onLid(98, 24) },
+    { n: 3, side: "R", y: 150, title: "system clock", sub: ["Intl time zone", "locale and calendar"], at: onLid(119, 9) },
+    { n: 6, side: "R", y: 300, title: "keyboard and OS", sub: ["navigator.languages", "installed fonts"], at: q([48, -10, 5]) },
+  ];
+  const callouts = labels
+    .map((c) => {
+      const left = c.side === "L";
+      const x = left ? 24 : W - 24;
+      const edge = left ? 214 : W - 214;
+      const [ax, ay] = c.at;
+      const a = left ? "start" : "end";
+      return (
+        `<rect class="tag" x="${(left ? x : x - 16).toFixed(1)}" y="${c.y - 12}" width="16" height="16"/><text class="tag-t" x="${(left ? x + 8 : x - 8).toFixed(1)}" y="${c.y - 0.4}" text-anchor="middle">${c.n}</text>` +
+        `<text class="lbl" x="${(left ? x + 24 : x - 24).toFixed(1)}" y="${c.y}" text-anchor="${a}">${c.title}</text>` +
+        c.sub.map((t, i) => `<text class="lbl-s" x="${(left ? x + 24 : x - 24).toFixed(1)}" y="${c.y + 17 + i * 13}" text-anchor="${a}">${t}</text>`).join("") +
+        `<path class="ldr" d="M${edge} ${c.y - 4}H${left ? edge + 16 : edge - 16}L${ax.toFixed(1)} ${ay.toFixed(1)}"/><circle class="tag-dot" cx="${ax.toFixed(1)}" cy="${ay.toFixed(1)}" r="2.6"/>`
+      );
+    })
+    .join("");
+  return `<div class="stage isowrap"><svg class="iso-svg flat-iso" viewBox="0 0 ${W} ${H}" role="img" aria-label="A MacBook with its lid open, showing a browser. Six numbered callouts point at the display, browser, system clock, speakers, chip and keyboard, each with the browser API a script uses to read it.">${out.join("")}${callouts}</svg></div>`;
+}
+
 // ───────────────────────────── page ─────────────────────────────
 const namespaced = (name, file) => {
   const src = readFileSync(file, "utf8");
@@ -348,31 +455,100 @@ const LIVE = readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSO
 const PROBE = readFileSync(join(HERE, "probe.js"), "utf8");
 const script = [kitScript(), latheScript(), namespaced("MODEL", join(HERE, "model.mjs")), LIVE, PROBE].join("\n");
 
-const first = M.reading("open", 0);
-const corners = `<div class="iso-plate-corners" aria-hidden="true"><span class="iso-plate-corner" data-corner="fig">Fig 1</span><span class="iso-plate-corner" data-corner="title">Fingerprint sieve</span><span class="iso-plate-corner" data-corner="hint">Hover a sieve · M changes protection</span><span class="iso-plate-corner" data-corner="readout" data-readout>0/${N} · 0 bits · ${M.fmtCount(first.pool)} like you</span></div>`;
-const modeButtons = M.MODES.map((id, index) => `<button type="button" class="fp-chip" data-mode-btn="${id}"${index === 0 ? " data-on" : ""}>${M.MODE_LABEL[id]}</button>`).join("");
-const stationButtons = M.TRAITS.map((t, i) => `<button type="button" class="fp-chip" data-st-btn="${i + 1}"><span class="fp-num">${i + 1}</span>${t.short}</button>`).join("");
-const stage = `<div class="fp-stage" tabindex="0" role="group" aria-label="Fingerprint sieve. Move the pointer over a sieve or use the arrow keys to pick a trait; M cycles the protection mode; space pauses the tour.">${svg}</div><span class="fp-live" aria-live="polite" data-announce></span>`;
-const figure =
-  `<figure class="iso-figure fp"><div class="iso-plate">${corners}${stage}</div>` +
-  `<figcaption class="iso-legend">` +
-  `<span class="fp-rows"><span class="fp-row-label">Protection</span><span class="fp-chips" data-modes>${modeButtons}</span></span>` +
-  `<span class="fp-rows"><span class="fp-row-label">Trait</span><span class="fp-chips" data-stations>${stationButtons}</span></span>` +
-  `<span class="fp-step" data-step><span class="fp-step-title" data-step-title></span><span class="fp-step-text" data-step-text></span><span class="fp-step-stats" data-step-stats></span></span>` +
-  `<span class="fp-mode-note" data-mode-note></span>` +
-  `<span class="iso-caption">The ball is the visitor. Each sieve is one kind of question, and its lamps count the bits it removes from the crowd: a filled lamp identifies you from visit to visit, a ring is a bit the protection took away or scrambled. The dial counts bits; the scale beside it counts how many people still look like you, ten times fewer at every major mark. The bit value of each trait is illustrative; the arithmetic is exact.</span>` +
-  `</figcaption></figure>`;
+let figCount = 0;
+const used = {};
+const num = (n) => `FIG_${String(n).padStart(3, "0")}`;
+const fig = (caption, inner, foot = "", key = "") => {
+  figCount += 1;
+  if (key) used[key] = num(figCount);
+  return `<figure><div class="fh"><b>${num(figCount)}</b><span>[ ${caption} ]</span></div>${inner}${foot ? `<div class="ff">${foot}</div>` : ""}</figure>`;
+};
+const section = (title, text) => `<div class="prose"><h2>${title}</h2>${text ? `<p>${text}</p>` : ""}</div>`;
 
-const body = readFileSync(join(HERE, "page.html"), "utf8").replace("__FIGURE__", figure);
-const CSS = readFileSync(join(HERE, "fp.css"), "utf8");
+const modeButtons = M.MODES.map((id, i) => `<button type="button" class="chip" data-mode-btn="${id}"${i === 0 ? " data-on" : ""}>${M.MODE_LABEL[id]}</button>`).join("");
+const stationButtons = M.TRAITS.map((t, i) => `<button type="button" class="chip" data-st-btn="${i + 1}"><span class="n">${i + 1}</span>${t.short}</button>`).join("");
+const first = M.reading("open", 0);
+const sieveFigure = () =>
+  `<figure class="fp"><div class="fh"><b>${(figCount += 1, used.sieve = num(figCount))}</b><span>[ seven sieves, one per trait ]</span></div>` +
+  `<div class="stage"><div class="fp-stage" tabindex="0" role="group" aria-label="Fingerprint sieve. Move the pointer over a sieve or use the arrow keys to pick a trait; M cycles the protection mode; space pauses the tour.">${svg}</div><span class="live" aria-live="polite" data-announce></span></div>` +
+  `<div class="ctl"><span class="ctl-l">protection</span><span class="chips" data-modes>${modeButtons}</span><span class="ctl-l">trait</span><span class="chips" data-stations>${stationButtons}</span></div>` +
+  `<div class="step"><b data-step-title></b><span data-step-text></span><span class="mono-s" data-step-stats></span></div>` +
+  `<div class="ff"><span class="readout" data-readout>0/${N} · 0 bits · ${M.fmtCount(first.pool)} like you</span><span class="cap-t" data-mode-note></span></div></figure>`;
+
+const probeFigure = () => fig(
+  "your browser, measured here",
+  `<div class="stage"><div class="win" data-probe>
+    <div class="chrome"><i></i><i></i><i></i><span class="url">this page · nothing leaves your device</span></div>
+    <div class="win-body">
+      <div class="probe-id"><span class="mono-s">fingerprint</span><code data-probe-id>…</code><span data-probe-nick></span></div>
+      <div class="scroll"><table class="log probe"><thead><tr><th>probe</th><th>reading</th><th>its hash</th></tr></thead><tbody data-probe-rows></tbody></table></div>
+      <div class="ctl flush"><button type="button" class="chip" data-probe-run>measure again</button><button type="button" class="chip" data-probe-noise>add farbling noise</button><button type="button" class="chip" data-probe-clear>noise off</button></div>
+      <div class="mono-s" data-probe-same></div>
+    </div></div></div>`,
+  `<p class="cap-t">One changed pixel moves the whole hash. That is why farbling works, and why an exact match is not needed to link two visits.</p>`,
+);
+
+const WORDS = [
+  ["fingerprint", "One short ID computed from many readings of a browser and device."],
+  ["probe", "A small test a script runs to read one trait, such as the pixels of a hidden canvas."],
+  ["bit", "One halving of the crowd. 33 bits single out one person in 8.6 billion."],
+  ["farbling", "Brave's defence: small noise on what probes read, seeded per site and per session."],
+  ["letterboxing", "Tor's defence: window sizes rounded to fixed steps, so many users share one."],
+];
+const words = `<dl class="words"><div class="words-h mono-s">WORDS ON THIS PAGE</div>${WORDS.map(([w, d]) => `<div><dt>${w}</dt><dd>${d}</dd></div>`).join("")}</dl>`;
+
+const SOURCES = [
+  ["Cover Your Tracks (EFF)", "https://coveryourtracks.eff.org/"],
+  ["Mitigating Browser Fingerprinting in Web Specifications (W3C)", "https://www.w3.org/TR/fingerprinting-guidance/"],
+  ["Fingerprinting defenses 2.0 (Brave)", "https://brave.com/privacy-updates/4-fingerprinting-defenses-2.0/"],
+  ["Understanding browser fingerprinting (Tor Project)", "https://manual-f04e0b.pages.torproject.net/anti-fingerprinting/"],
+  ["Browser Fingerprinting: A Survey (Laperdrix et al.)", "https://arxiv.org/abs/1905.01051"],
+  ["How Unique Is Your Web Browser? (Eckersley, 2010)", "https://www.springerprofessional.de/en/how-unique-is-your-web-browser/3331922"],
+  ["AmIUnique", "https://amiunique.org/"],
+  ["JShelter: farbling wrappers", "https://jshelter.org/farbling/"],
+];
+
+const defs = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><marker id="ah" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1 1.2L9 5L1 8.8" fill="none" style="stroke:var(--ink)" stroke-width="1.3" stroke-linejoin="round"/></marker></defs></svg>`;
+
+const body = [
+  defs,
+  `<nav class="top mono-s"><a href="/">← all figures</a><span>FINGERPRINTING / HOW IT WORKS</span><button type="button" data-theme-toggle>theme</button></nav>`,
+  `<header><h1>How does browser fingerprinting work?</h1><p class="dek">Your browser answers a few dozen questions without being asked. Put together, the answers are a name.</p></header>`,
+  words,
+  section("What is the machine?", "Each sieve is one question. Only the people who answer like you fall through to the next."),
+  sieveFigure(),
+  section("Who talks to whom?", "A page loads a script from a third party. The script reports one ID, and no cookie is needed."),
+  fig("one page view, three machines", DG.requestFlow(), `<p class="cap-t">The tracker sees the same ID on every site that embeds its script.</p>`),
+  section("What does the request already say?", "Before any script runs, the headers and the IP have said a lot."),
+  fig("a request, as DevTools shows it", DG.requestHeaders(), `<p class="cap-t">Marked rows are the ones that tell machines apart.</p>`),
+  section("What can the script read?", "Six parts of the laptop, six probes. None of them asks permission."),
+  fig("a MacBook, and what each part gives away", macbook(), `<p class="cap-t">The numbers are the browser APIs a script calls; the parts are where the answer comes from.</p>`),
+  section("How does one probe tell machines apart?", "Same drawing code, different rounding. The edge pixels differ, so the hash does."),
+  fig("the canvas probe, on two machines", DG.pixelGrids(), `<p class="cap-t">The pixel values are computed for this figure with two slightly different renderers.</p>`),
+  section("Why is that enough?", "Every bit halves the crowd. Thirty-three bits leave one person."),
+  fig("every bit halves the crowd", DG.halving()),
+  fig("the crowd, as each sieve reads you", DG.crowdChart(), `<p class="cap-t">Bits per trait are illustrative; the arithmetic is exact. Real traits overlap, so real totals are lower.</p>`, "chart"),
+  section("What does the tracker see?", "Cookies change and IPs change. The fingerprint does not."),
+  fig("a tracker's visitor log", DG.trackerLog()),
+  section("What changes it?", "Almost nothing you do on purpose."),
+  fig("what survives what", DG.survives(), `<p class="cap-t">About 37% of returning visitors in the 2010 Panopticlick data showed at least one change, so trackers match loosely.</p>`),
+  section("How do browsers fight back?", "Three strategies, one test, three answers."),
+  fig("the same canvas test in three browsers", DG.threeBrowsers(), `<p class="cap-t">Hashes are illustrative. Brave seeds noise per site and session; Tor makes everyone answer alike.</p>`),
+  section("Try it", "Everything here runs in this tab, and nothing is sent."),
+  probeFigure(),
+  `<footer><div class="mono-s">SOURCES</div><ul>${SOURCES.map(([t, u]) => `<li><a href="${u}">${t}</a></li>`).join("")}</ul><p>Per-trait bit values in ${used.sieve} and ${used.chart} are illustrative round numbers that sum to 33. The study figures and the descriptions of Brave and Tor come from the sources above.</p></footer>`,
+].join("\n");
+
+const FONT = readFileSync(join(HERE, "departure-mono.woff2")).toString("base64");
+const CSS = `@font-face{font-family:"Departure Mono";src:url(data:font/woff2;base64,${FONT}) format("woff2");font-display:swap}\n` + readFileSync(join(HERE, "fp.css"), "utf8");
 const THEME_INIT = `<script>try{var t=new URLSearchParams(location.search).get("theme")||localStorage.getItem("iso-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.body.dataset.theme=t}catch(e){}</script>`;
 const THEME_TOGGLE = `document.querySelector("[data-theme-toggle]")?.addEventListener("click",()=>{const next=document.body.dataset.theme==="dark"?"light":"dark";document.body.dataset.theme=next;try{localStorage.setItem("iso-theme",next)}catch(e){}});`;
 const page = k.pageHtml({
-  title: "How browser fingerprinting identifies you",
+  title: "How does browser fingerprinting work?",
   theme: THEME,
   body: `${THEME_INIT}<style>${CSS}</style>${body}`,
   script: script + "\n" + THEME_TOGGLE,
-  width: 880,
+  width: 1040,
 });
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, page);

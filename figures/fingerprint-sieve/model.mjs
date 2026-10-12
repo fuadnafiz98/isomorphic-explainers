@@ -10,33 +10,33 @@ export const WORLD_BITS = Math.log2(WORLD);
 export const TRAITS = [
   { id: "headers", name: "Request headers", short: "headers", bits: 7, farbled: false, uniform: 1,
     reads: "User-Agent, Accept-Language, and the region your IP address maps to",
-    how: "Nothing runs on your device yet: the headers ride along with the request itself. This is the passive part, and it is already worth a few thousand-fold narrowing." },
+    how: "Sent with the request itself, before any script runs." },
   { id: "screen", name: "Screen and window", short: "screen", bits: 5, farbled: false, uniform: 1,
     reads: "resolution, pixel ratio, colour depth, window size",
-    how: "The page's script reads the size of your display and window. Tor Browser rounds the window to fixed steps (letterboxing) so thousands of users share one size." },
+    how: "Display size, pixel ratio and window size." },
   { id: "locale", name: "Time zone and locale", short: "time zone", bits: 3, farbled: false, uniform: 0,
     reads: "Intl time zone, calendar, number format, language list",
-    how: "A VPN moves your IP address, not your time zone. The Intl API reports the zone and formats your system is set to." },
+    how: "A VPN moves your IP address, not your time zone." },
   { id: "hardware", name: "Hardware", short: "hardware", bits: 3, farbled: true, uniform: 0,
     reads: "logical core count, device memory (Chromium)",
-    how: "Two numbers, no permission prompt. Cheap to read, and a stable part of the fingerprint unless the browser scrambles or clamps it." },
+    how: "Two numbers, no permission prompt." },
   { id: "canvas", name: "Canvas and fonts", short: "canvas", bits: 7, farbled: true, uniform: 0,
     reads: "pixels of a drawn test image, text metrics of installed fonts",
-    how: "The script draws text, an emoji and a gradient to a hidden canvas and reads the pixels back. Anti-aliasing, font hinting and the GPU path differ between machines, so the pixels do too." },
+    how: "A hidden canvas is drawn and read back; edge pixels differ." },
   { id: "webgl", name: "WebGL and GPU", short: "WebGL", bits: 5, farbled: true, uniform: 0,
     reads: "GPU vendor and model, extension list, limits, a rendered triangle",
-    how: "The unmasked renderer string names your GPU, the supported extensions and limits describe your driver, and a rendered triangle's pixels depend on both." },
+    how: "The GPU's name, its extensions and a rendered triangle." },
   { id: "audio", name: "Audio stack", short: "audio", bits: 3, farbled: true, uniform: 0,
     reads: "a short tone rendered offline through a compressor",
-    how: "A tone is rendered without ever playing it. Tiny float differences in the result come from your audio engine and CPU." },
+    how: "A tone rendered offline; tiny float differences." },
 ];
 
 export const MODES = ["open", "farbled", "uniform"];
 export const MODE_LABEL = { open: "No protection", farbled: "Farbled", uniform: "Uniform" };
 export const MODE_NOTE = {
-  open: "Every trait answers truthfully, so every bit counts and carries over from visit to visit.",
-  farbled: "Brave-style: canvas, audio, WebGL and core count get noise seeded per session and per site. Within one site and session they are consistent, so this visit still narrows the crowd, but the values are new next session and different on every other site, so those bits do not link visits.",
-  uniform: "Tor-style: the same answer for everyone, or no answer at all. The crowd barely narrows, so there is little to tell you apart, though the fingerprint is itself recognisable as a Tor one.",
+  open: "Every answer is true and stable, so every bit carries over.",
+  farbled: "Noise per site and session: bits count now, but do not carry over.",
+  uniform: "Everyone answers the same: the crowd barely narrows.",
 };
 
 export const bitsOf = (trait, mode) => (mode === "uniform" ? trait.uniform : trait.bits);
