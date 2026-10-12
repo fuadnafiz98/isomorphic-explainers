@@ -1,0 +1,17 @@
+{
+  "name": "isometric-explainers",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Interactive isometric explainers: each figure is a real machine whose working is the idea.",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "node scripts/build-site.mjs",
+    "preview": "node scripts/serve.mjs dist",
+    "audit": "node figures/b2-spirit/build.mjs --audit",
+    "lines": "node scripts/lines.mjs dist/b2-spirit/index.html",
+    "deploy": "npm run build && npx --yes wrangler@4 deploy",
+    "deploy:preview": "npm run build && npx --yes wrangler@4 versions upload"
+  }
+}

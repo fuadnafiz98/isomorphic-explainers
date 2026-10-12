@@ -1,0 +1,10 @@
+{
+  // Static site: the build writes everything into ./dist and Cloudflare serves it as-is.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "isometric-explainers",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  }
+}

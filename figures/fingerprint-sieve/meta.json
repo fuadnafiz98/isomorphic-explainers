@@ -1,0 +1,5 @@
+{
+  "slug": "fingerprint-sieve",
+  "title": "How browser fingerprinting identifies you",
+  "blurb": "A cascade of seven sieves, one per trait: each one removes part of the crowd until only your browser is left. Switch protections on and watch the bits disappear."
+}

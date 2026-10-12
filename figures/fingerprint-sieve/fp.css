@@ -1,0 +1,86 @@
+/* page furniture */
+.fp-head h1{margin:0 0 8px;font-size:26px;line-height:1.2;font-weight:600;letter-spacing:-.015em;color:var(--anatomy-strong)}
+.fp-head p{margin:0 0 22px;max-width:64ch}
+.fp-nav{display:flex;justify-content:space-between;align-items:center;margin:0 0 18px;font:11px/1 var(--anatomy-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--anatomy-muted)}
+.fp-nav a,.fp-nav button{color:inherit;text-decoration:none;font:inherit;letter-spacing:inherit;text-transform:inherit;background:none;border:0;padding:0;cursor:pointer}
+.fp-nav a:hover,.fp-nav button:hover{color:var(--anatomy-strong)}
+.fp-prose{margin-top:36px;max-width:70ch}
+.fp-prose h2{margin:34px 0 8px;font-size:16px;font-weight:600;color:var(--anatomy-strong)}
+.fp-prose p{margin:0 0 12px}
+.fp-prose a{color:inherit;text-decoration-color:var(--anatomy-lo);text-underline-offset:2px}
+.fp-prose a:hover{color:var(--anatomy-strong)}
+.fp-prose code{font:12.5px/1.4 var(--anatomy-mono);color:var(--anatomy-strong)}
+.fp-prose em{font-style:normal;color:var(--anatomy-strong)}
+.fp-steps{margin:0 0 14px;padding:0;list-style:none;counter-reset:s}
+.fp-steps li{position:relative;margin:0 0 10px;padding-left:34px;counter-increment:s}
+.fp-steps li::before{content:counter(s);position:absolute;left:0;top:2px;width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--anatomy-lo);font:11px/22px var(--anatomy-mono);text-align:center;color:var(--anatomy-text)}
+.fp-steps b{color:var(--anatomy-strong);font-weight:600}
+.fp-table{width:100%;border-collapse:collapse;margin:6px 0 16px;font-size:13px}
+.fp-table th,.fp-table td{padding:8px 12px 8px 0;text-align:left;vertical-align:top;border-bottom:1px solid var(--fp-line)}
+.fp-table thead th{font:10.5px/1 var(--anatomy-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--anatomy-muted);font-weight:400}
+.fp-table tbody th{font-weight:400;color:var(--anatomy-strong)}
+.fp-scroll{overflow-x:auto}
+.fp-defs{margin:0 0 14px}
+.fp-defs dt{margin:14px 0 2px;color:var(--anatomy-strong);font-weight:600}
+.fp-defs dd{margin:0}
+.fp-sources{margin:0 0 16px;padding-left:18px}
+.fp-sources li{margin:0 0 6px}
+.fp-src{font-size:12px;color:var(--anatomy-muted)}
+.iso{--fp-line:#0000001a;--fp-ring:#00000014;--fp-hover:#0000000a}
+.iso[data-theme="dark"]{--fp-line:#ffffff17;--fp-ring:#ffffff10;--fp-hover:#ffffff0a}
+
+/* the card */
+.fp .iso-plate{padding:48px 20px 64px;overflow:hidden}
+.fp-stage{position:relative;border-radius:10px;touch-action:pan-y;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;cursor:crosshair}
+.fp-stage:focus-visible{outline:1px solid var(--anatomy-muted);outline-offset:6px}
+.fp-stage>svg{display:block;width:100%;height:auto}
+.fp-live{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+
+/* the sieve being read: its mesh steps up a tone, the ball stays the one lit part */
+.it .mesh .iso-line{transition:stroke .25s var(--anatomy-ease)}
+.it[data-on] .mesh .iso-line{stroke:var(--anatomy-hi)}
+
+/* legend */
+.fp-rows{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.fp-row-label{flex:0 0 78px;font:10.5px/1 var(--anatomy-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--anatomy-muted)}
+.fp-chips{display:flex;flex-wrap:wrap;gap:6px}
+.fp-chip{display:inline-flex;align-items:baseline;gap:7px;padding:5px 11px;border:0;border-radius:999px;background:transparent;color:var(--anatomy-muted);font:12.5px/1.3 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;cursor:pointer;box-shadow:inset 0 0 0 1px var(--fp-ring);transition:color .16s var(--anatomy-ease),background .16s var(--anatomy-ease)}
+.fp-chip:hover,.fp-chip:focus-visible,.fp-chip[data-on]{color:var(--anatomy-strong);background:var(--fp-hover);outline:none}
+.fp-chip:focus-visible{box-shadow:inset 0 0 0 1px var(--anatomy-muted)}
+.fp-chip:disabled{opacity:.5;cursor:default}
+.fp-num{font:10px/1 var(--anatomy-mono);color:var(--anatomy-muted)}
+.fp-step{display:grid;gap:3px;margin-top:6px}
+.fp-step-title{color:var(--anatomy-strong);font-weight:600}
+.fp-step-text{color:var(--anatomy-text)}
+.fp-step-stats{font:11.5px/1.5 var(--anatomy-mono);color:var(--anatomy-muted)}
+.fp-mode-note{display:block;color:var(--anatomy-muted)}
+
+/* try it */
+.fp-probe{margin-top:34px;padding:18px 20px;border-radius:14px;background:var(--anatomy-card);box-shadow:var(--anatomy-lift)}
+.fp-probe h2{margin-top:0}
+.fp-probe-id{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;margin:6px 0 12px}
+.fp-probe-label{flex:1 0 100%;font:10.5px/1 var(--anatomy-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--anatomy-muted)}
+.fp-probe-id code{font:20px/1.2 var(--anatomy-mono);letter-spacing:.04em;color:var(--anatomy-strong)}
+.fp-probe-nick{color:var(--anatomy-text)}
+.fp-probe-value{max-width:44ch;word-break:break-word;font-family:var(--anatomy-mono);font-size:11.5px;color:var(--anatomy-text)}
+.fp-probe-table td:last-child code{color:var(--anatomy-muted)}
+.fp-probe-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px 8px}
+.fp-probe-same{flex:1 0 100%;font-size:12.5px;color:var(--anatomy-muted)}
+
+@media (max-width:640px){
+  .fp .iso-plate{padding:46px 6px 76px}
+  .fp .iso-plate-corner[data-corner="readout"]{bottom:44px;right:0;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  .fp .iso-plate-corner[data-corner="hint"]{max-width:70%;overflow:hidden;text-overflow:ellipsis}
+  .fp-stage{margin:0 -4px}
+  .fp-row-label{flex-basis:100%}
+}
+@media (prefers-reduced-motion:reduce){.fp *{transition:none!important}}
+
+/* the visitor: the one lit part, drawn as a solid accent */
+.fp-ball .iso-fill{fill:var(--anatomy-lit)}
+.fp-ball .iso-shade[data-shade="0"]{fill:var(--anatomy-lit)}
+.fp-ball .iso-shade[data-shade="1"]{fill:color-mix(in srgb,var(--anatomy-lit) 88%,var(--anatomy-paper))}
+.fp-ball .iso-shade[data-shade="2"]{fill:color-mix(in srgb,var(--anatomy-lit) 70%,var(--anatomy-paper))}
+.fp-ball .iso-shade[data-shade="3"]{fill:color-mix(in srgb,var(--anatomy-lit) 52%,var(--anatomy-paper))}
+.fp-ball .iso-top{fill:color-mix(in srgb,var(--anatomy-lit) 40%,var(--anatomy-paper))}
+.fp-ball .iso-edge{stroke:var(--anatomy-lit)}

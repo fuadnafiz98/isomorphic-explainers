@@ -1,0 +1,113 @@
+<nav class="fp-nav"><a href="/">← All figures</a><button type="button" data-theme-toggle>Theme</button></nav>
+<header class="fp-head">
+  <h1>How browser fingerprinting identifies you</h1>
+  <p>A fingerprint is not stored on your device. It is worked out again on every visit, from how your browser and hardware answer a handful of questions. That is why clearing cookies does not remove it.</p>
+</header>
+
+__FIGURE__
+
+<div class="fp-prose">
+
+<h2>1 · The idea in plain words</h2>
+<p>A cookie is a name tag a site hands you. You can take it off. A fingerprint is the site recognising your face: nothing was handed over, and nothing can be taken off.</p>
+<p>No single answer is rare. Millions of people run the latest Chrome, millions have the same laptop, millions read French. But the people who have <em>all</em> of those, plus your GPU, your fonts, your screen and your time zone, are a much smaller crowd. Keep adding answers and the crowd shrinks until it is one browser. The figure is that process as a machine: the ball is you, each sieve is one kind of question, and only the part of the crowd that answers the way you do falls through to the next one.</p>
+
+<h2>2 · Step by step: what happens when you open a page</h2>
+<ol class="fp-steps">
+  <li><b>The request leaves.</b> It carries your IP address and headers such as <code>User-Agent</code> and <code>Accept-Language</code>. The server learns these before any script runs, which is why the W3C calls this <em>passive</em> fingerprinting.</li>
+  <li><b>The page arrives with a script.</b> Often not the site's own: an ad or analytics script embedded on thousands of sites runs the same probes everywhere.</li>
+  <li><b>The script probes your device.</b> This is <em>active</em> fingerprinting, and it needs no permission prompt. It draws to a hidden canvas, asks WebGL for the GPU name, renders a tone offline, measures text in candidate fonts and reads the screen, time zone and core count.</li>
+  <li><b>The readings become one string.</b> The values are joined in a fixed order. Any single change produces a different string.</li>
+  <li><b>The string is hashed.</b> The hash is the ID. The demo at the bottom of this page uses SHA-256; many libraries use faster non-cryptographic hashes.</li>
+  <li><b>The server looks the ID up.</b> Seen before? Then you are the same visitor, and whatever else is attached to that ID (an account, an ad profile, a purchase history) comes with you, across every site that embeds the same script.</li>
+</ol>
+
+<h2>3 · Why a handful of answers is enough: counting bits</h2>
+<p>The unit is the bit. A trait shared by one person in <i>n</i> is worth <code>log₂(n)</code> bits, because that is how many times it halves the crowd.</p>
+<table class="fp-table">
+  <thead><tr><th>Trait is shared by</th><th>Bits</th><th>Example</th></tr></thead>
+  <tbody>
+    <tr><td>1 in 2</td><td>1</td><td>one of two browser families</td></tr>
+    <tr><td>1 in 8</td><td>3</td><td>a time zone that eight in a hundred share</td></tr>
+    <tr><td>1 in 128</td><td>7</td><td>a rare screen size</td></tr>
+    <tr><td>1 in 8.6 billion</td><td>33</td><td>one person on Earth</td></tr>
+  </tbody>
+</table>
+<p>Independent traits add. 33 bits is 2³³, about 8.6 billion, more than the number of people alive, so 33 bits of answers is, in principle, enough to single out anyone. The seven sieves in the figure are worth exactly 33 bits in total; the split between them is illustrative.</p>
+<p>The catch is the word <em>independent</em>. A Mac, an M-series chip and Safari tell you almost the same thing, so their bits overlap and the real total is lower than the sum. Researchers therefore measure the bits of the whole fingerprint rather than adding up traits. EFF's 2010 Panopticlick study put a lower bound at 18.1 bits, meaning that at best one browser in 286,777 shared a fingerprint. Its explanatory framing is that a random person among roughly seven billion carries just under 33 bits.</p>
+<table class="fp-table">
+  <thead><tr><th>Study</th><th>Sample</th><th>Finding</th></tr></thead>
+  <tbody>
+    <tr><td>Panopticlick (Eckersley, EFF, 2010)</td><td>almost a million visitors</td><td>at least 18.1 bits; about 84% of configurations unique</td></tr>
+    <tr><td>AmIUnique (Laperdrix et al., 2016)</td><td>118,934 fingerprints</td><td>89.4% unique; 81% of mobile fingerprints</td></tr>
+    <tr><td>Hiding in the Crowd (2018)</td><td>over 2 million fingerprints, one French news site</td><td>33.6% unique on the same 17 attributes</td></tr>
+  </tbody>
+</table>
+<p>The drop between 2016 and 2018 is mostly a different population and different attributes (plugins, one of the strongest early signals, were being retired), not a fix. Newer signals such as canvas carry a lot of entropy.</p>
+
+<h2>4 · Under the hood: what each probe reads</h2>
+<table class="fp-table fp-table-wide">
+  <thead><tr><th>Probe</th><th>How it is read</th><th>Why it differs between machines</th></tr></thead>
+  <tbody>
+    <tr><td>Headers</td><td>sent with the request</td><td>browser and OS version, language list, the region of your IP</td></tr>
+    <tr><td>Screen and window</td><td><code>screen</code>, <code>devicePixelRatio</code>, window size</td><td>display hardware and how you use it</td></tr>
+    <tr><td>Time zone and locale</td><td><code>Intl.DateTimeFormat().resolvedOptions()</code></td><td>system settings; a VPN changes your IP, not your time zone</td></tr>
+    <tr><td>Hardware</td><td><code>navigator.hardwareConcurrency</code>, <code>deviceMemory</code> (Chromium)</td><td>core count and RAM</td></tr>
+    <tr><td>Canvas and fonts</td><td>draw text, an emoji and a gradient, then <code>getImageData</code>; measure text widths</td><td>font rendering, anti-aliasing, installed fonts and the GPU path all change the pixels</td></tr>
+    <tr><td>WebGL and GPU</td><td>unmasked renderer string, extension list, limits, <code>readPixels</code> of a triangle</td><td>GPU model, driver and what both support</td></tr>
+    <tr><td>Audio</td><td>an <code>OfflineAudioContext</code> renders a tone through a compressor, never played</td><td>tiny floating-point differences in the audio engine and CPU</td></tr>
+  </tbody>
+</table>
+
+<h2>5 · Stable enough to follow you</h2>
+<p>A good fingerprint needs two things that pull against each other: <em>uniqueness</em> (few people share it) and <em>stability</em> (it stays the same between visits). A signal that is unique but jumpy causes false negatives, the same person looking new; a stable but common one causes false positives, two people merged. Real systems weigh the signals and tolerate small changes.</p>
+<p>They have to. In Panopticlick's data, 37.4% of returning visitors showed at least one change within a day or more of their first visit: a browser update, a new font, a zoom level. Trackers do not need an exact match. They need a close one, plus whatever else they have, such as the IP address and visit times. Commercial products say outright that they combine browser signals with server-side data.</p>
+<p>That is also why the usual advice fails. Cookies, incognito mode and a VPN all change something the fingerprint does not depend on.</p>
+
+<h2>6 · Defences: three strategies</h2>
+<p>Use the <b>Protection</b> buttons under the figure to see each one.</p>
+<dl class="fp-defs">
+  <dt>Reduce and standardise</dt>
+  <dd>The W3C's guidance for people writing web standards: add no surface that is not needed, narrow who can use it, round or clamp values, and avoid persistent state. It scores a surface on <em>entropy, detectability, persistence, availability and scope</em>. Done at the standard it protects everyone, but only for new features.</dd>
+  <dt>Uniformity (Tor, Mullvad)</dt>
+  <dd>Make everyone look the same, so there is nothing to tell people apart. Tor Browser starts with a window size rounded to multiples of 200×100 px, and letterboxing keeps a maximised window in a handful of buckets. It blocks canvas readback, removes plugins and ships a fixed font set. The cost: the fingerprint is itself recognisable as Tor, and a user who resizes the window or has unusual settings can stand out again.</dd>
+  <dt>Randomisation, "farbling" (Brave)</dt>
+  <dd>Add small noise to what the page reads. Brave makes a random token at start-up, never exposed to sites, and combines it by HMAC with each top-level site. A site therefore sees consistent values within a session, different sites see different values, and the same site sees new values next session. Canvas readback, audio buffers and analyser data, WebGL reads and renderer strings, <code>navigator.plugins</code> and device enumeration are farbled. The page that prompted this figure shows Brave randomising the core count too. In the figure, the farbled traits still narrow the crowd within a session, but those bits stop carrying over, so visits cannot be linked by them.</dd>
+</dl>
+<p>Why not simply block the APIs? Brave's own account is that blocking helps only at the margins and often breaks sites. And privacy extensions can make you <em>more</em> distinctive, since few people run them and a tracker can notice the tampering and lean on the signals that were left alone.</p>
+
+<section class="fp-probe" data-probe>
+  <h2>7 · Try it on your own browser</h2>
+  <p>This runs the same kinds of probes in this tab and hashes them. Nothing leaves your device. Reload and the ID stays the same; press the noise button and watch one small change move the whole hash.</p>
+  <div class="fp-probe-id">
+    <span class="fp-probe-label">Fingerprint (first 16 hex digits of the hash)</span>
+    <code data-probe-id>…</code>
+    <span class="fp-probe-nick" data-probe-nick></span>
+  </div>
+  <div class="fp-scroll">
+    <table class="fp-table fp-table-wide fp-probe-table">
+      <thead><tr><th>Probe</th><th>Reading</th><th>Its own hash</th></tr></thead>
+      <tbody data-probe-rows></tbody>
+    </table>
+  </div>
+  <div class="fp-probe-actions">
+    <button type="button" class="fp-chip" data-probe-run>Measure again</button>
+    <button type="button" class="fp-chip" data-probe-noise>Simulate farbling noise</button>
+    <button type="button" class="fp-chip" data-probe-clear>Noise off</button>
+    <span class="fp-probe-same" data-probe-same></span>
+  </div>
+</section>
+
+<h2>Sources</h2>
+<ul class="fp-sources">
+  <li><a href="https://coveryourtracks.eff.org/">Cover Your Tracks</a> (EFF): measure your own browser; reports its result as bits of identifying information.</li>
+  <li><a href="https://www.w3.org/TR/fingerprinting-guidance/">Mitigating Browser Fingerprinting in Web Specifications</a> (W3C Group Note): passive and active fingerprinting, the five severity factors, best practices.</li>
+  <li><a href="https://brave.com/privacy-updates/4-fingerprinting-defenses-2.0/">Fingerprinting defenses 2.0</a> (Brave): the farbling seed, which APIs are farbled and why randomising beat blocking.</li>
+  <li><a href="https://manual-f04e0b.pages.torproject.net/anti-fingerprinting/">Understanding browser fingerprinting</a> (Tor Project manual): the uniformity approach and letterboxing.</li>
+  <li><a href="https://arxiv.org/abs/1905.01051">Browser Fingerprinting: A Survey</a> (Laperdrix, Bielova, Baudry, Avoine, 2019): composition of fingerprints and a taxonomy of defences.</li>
+  <li><a href="https://www.springerprofessional.de/en/how-unique-is-your-web-browser/3331922">How Unique Is Your Web Browser?</a> (Eckersley, 2010): the Panopticlick study.</li>
+  <li><a href="https://jshelter.org/farbling/">Farbling-based wrappers to hinder browser fingerprinting</a> (JShelter): an extension that applies Brave-style farbling.</li>
+  <li><a href="https://amiunique.org/">AmIUnique</a>: the research project behind the 2016 study, which lets you test your own browser.</li>
+</ul>
+<p class="fp-src">Per-trait bit values in the figure are illustrative round numbers that add up to 33; the bit arithmetic, the studies' figures and the descriptions of Tor and Brave come from the sources above. The Tor-style mode keeps a couple of bits (header and window-size buckets) to reflect that uniformity is rarely perfect.</p>
+</div>
