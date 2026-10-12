@@ -1,10 +1,10 @@
 /* One reading column, wide dotted-grid figures, one monochrome line language. */
 body.iso{
   --bg:#EDEDEB;--panel:#F7F7F6;--cap:#FFFFFF;--side:#DCDCD9;--ink:#121212;--ink-2:#6B6B68;--rule:#CFCFCB;--grid:#E6E6E2;
-  --serif:ui-serif,"New York","Newsreader",Georgia,serif;--mono:"Departure Mono",ui-monospace,Menlo,monospace;
+  --serif:"Libron",Georgia,"Times New Roman",serif;--mono:"Paper Mono",ui-monospace,Menlo,monospace;--dep:"Departure Mono",ui-monospace,Menlo,monospace;
   /* the isometric kit reads these tokens */
   --anatomy-page:var(--bg);--anatomy-card:var(--panel);--anatomy-paper:var(--panel);--anatomy-face:#fff;--anatomy-top:#fff;
-  --anatomy-text:var(--ink-2);--anatomy-strong:var(--ink);--anatomy-muted:var(--ink-2);--anatomy-mono:var(--mono);
+  --anatomy-text:var(--ink-2);--anatomy-strong:var(--ink);--anatomy-muted:var(--ink-2);--anatomy-mono:var(--dep);
   background:var(--bg);color:var(--ink);font:400 18px/1.6 var(--serif);
 }
 body.iso[data-theme="dark"]{
@@ -17,10 +17,10 @@ a{color:inherit}
 .top{display:flex;justify-content:space-between;gap:16px;margin-bottom:64px}
 .top a,.top button{color:inherit;text-decoration:none;background:none;border:0;padding:0;font:inherit;cursor:pointer}
 .top a:hover,.top button:hover{color:var(--ink)}
-h1{font-weight:500;font-size:clamp(2.2rem,5vw,3.2rem);line-height:1.08;letter-spacing:-.02em;margin:0 0 14px;text-wrap:balance}
+h1{font-weight:400;font-size:clamp(2.2rem,5vw,3.2rem);line-height:1.08;letter-spacing:-.02em;margin:0 0 14px;text-wrap:balance}
 .dek{font-size:1.15rem;line-height:1.5;color:var(--ink-2);margin:0 0 36px;max-width:40ch}
 .prose{max-width:620px;margin:68px auto 0}
-.prose h2{font-weight:500;font-size:1.45rem;line-height:1.25;letter-spacing:-.01em;margin:0 0 8px}
+.prose h2{font-weight:400;font-size:1.45rem;line-height:1.25;letter-spacing:-.01em;margin:0 0 8px}
 .prose p{margin:0;color:var(--ink-2)}
 code{font:.84em var(--mono)}
 
@@ -57,11 +57,12 @@ figure{margin:28px 0 0;background-color:var(--panel);border:1px solid var(--rule
 .solid{fill:var(--ink)}
 .faintdot{fill:var(--ink-2);opacity:.45}
 .tag{fill:var(--ink)}
-.tag-t{fill:var(--panel);font:10px var(--mono)}
+.tag-t{fill:var(--panel);font:10px var(--dep)}
 .tag-dot{fill:var(--ink)}
 .ldr{fill:none;stroke:var(--ink);stroke-width:.8}
 .lbl{font:11px var(--mono);fill:var(--ink)}
-.lbl-s{font:10px var(--mono);fill:var(--ink-2)}
+.lbl-s{font:10px var(--dep);fill:var(--ink-2);text-transform:uppercase;letter-spacing:.04em}
+.lbl-c{font:10px var(--mono);fill:var(--ink-2)}
 .flatwrap{overflow-x:auto}
 
 /* browser windows */
@@ -80,7 +81,7 @@ figure{margin:28px 0 0;background-color:var(--panel);border:1px solid var(--rule
 .log tr.same code{background:var(--ink);color:var(--panel);padding:1px 6px}
 .log code{font-size:11.5px}
 .side-card{border-left:1px solid var(--rule);padding-left:18px;font:12px/1.5 var(--mono)}
-.side-card .big{font:44px/1 var(--mono);color:var(--ink);margin:6px 0 2px}
+.side-card .big{font:44px/1 var(--dep);color:var(--ink);margin:6px 0 2px}
 .side-card ul{list-style:none;margin:12px 0 0;padding:0}
 .side-card li b{font-weight:400;color:var(--ink)}
 .three{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:4px 18px 18px}
@@ -125,6 +126,12 @@ figure{margin:28px 0 0;background-color:var(--panel);border:1px solid var(--rule
 .probe .th,.probe th{white-space:nowrap}
 .probe td:nth-child(2){max-width:46ch;word-break:break-word;color:var(--ink-2)}
 .scroll{overflow-x:auto}
+
+/* Departure Mono carries annotations and anything that can be capitals; lowercase mono text stays in Paper Mono */
+.mono-s,.top,.words dt,.fh,.ff,.ctl-l,.chip,.tabs,.sec,.log th,.step b,.hl-legend li span,.hdr .t span,.side-card .big{font-family:var(--dep);text-transform:uppercase;letter-spacing:.05em}
+.cap-t,.step span{font-family:var(--serif);text-transform:none;letter-spacing:0}
+[data-probe-same],footer p{font-family:var(--mono);text-transform:none;letter-spacing:0}
+.words dd{text-transform:none;letter-spacing:0}
 
 /* the Hairline figures: the kernel's palette mapped on to the page's tokens */
 .hl,[data-hairline]{--hairline-plate:var(--panel);--hairline-hi:var(--ink);--hairline-edge:color-mix(in srgb,var(--ink) 52%,var(--panel));--hairline-mid:color-mix(in srgb,var(--ink) 32%,var(--panel));--hairline-lo:color-mix(in srgb,var(--ink) 17%,var(--panel));--hairline-stroke:1.05}

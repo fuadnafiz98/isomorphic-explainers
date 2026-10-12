@@ -412,7 +412,7 @@ function macbook() {
   scr.push(`<line class="ln" x1="14" y1="28" x2="146" y2="28" style="stroke-width:.5"/>`);
   [19, 23.5, 28].forEach((x) => scr.push(`<circle class="box" cx="${x}" cy="23.5" r="1.4" style="stroke-width:.5"/>`));
   scr.push(`<rect class="box" x="38" y="20.5" width="74" height="6" rx="3" style="stroke-width:.5"/>`);
-  scr.push(`<text class="lbl-s" x="43" y="25" style="font-size:4px">news.example</text>`);
+  scr.push(`<text class="lbl-c" x="43" y="25" style="font-size:4px">news.example</text>`);
   scr.push(`<rect class="solid" x="20" y="34" width="52" height="4.4"/>`);
   scr.push(`<line class="ln2" x1="20" y1="44" x2="76" y2="44"/><line class="ln2" x1="20" y1="49" x2="70" y2="49"/>`);
   scr.push(`<rect class="box" x="20" y="56" width="42" height="34"/><line class="guide" x1="20" y1="56" x2="62" y2="90"/><line class="guide" x1="62" y1="56" x2="20" y2="90"/>`);
@@ -437,7 +437,7 @@ function macbook() {
       return (
         `<rect class="tag" x="${(left ? x : x - 16).toFixed(1)}" y="${c.y - 12}" width="16" height="16"/><text class="tag-t" x="${(left ? x + 8 : x - 8).toFixed(1)}" y="${c.y - 0.4}" text-anchor="middle">${c.n}</text>` +
         `<text class="lbl" x="${(left ? x + 24 : x - 24).toFixed(1)}" y="${c.y}" text-anchor="${a}">${c.title}</text>` +
-        c.sub.map((t, i) => `<text class="lbl-s" x="${(left ? x + 24 : x - 24).toFixed(1)}" y="${c.y + 17 + i * 13}" text-anchor="${a}">${t}</text>`).join("") +
+        c.sub.map((t, i) => `<text class="lbl-c" x="${(left ? x + 24 : x - 24).toFixed(1)}" y="${c.y + 17 + i * 13}" text-anchor="${a}">${t}</text>`).join("") +
         `<path class="ldr" d="M${edge} ${c.y - 4}H${left ? edge + 16 : edge - 16}L${ax.toFixed(1)} ${ay.toFixed(1)}"/><circle class="tag-dot" cx="${ax.toFixed(1)}" cy="${ay.toFixed(1)}" r="2.6"/>`
       );
     })
@@ -556,8 +556,9 @@ const body = [
   `<footer><div class="mono-s">SOURCES</div><ul>${SOURCES.map(([t, u]) => `<li><a href="${u}">${t}</a></li>`).join("")}</ul><p>Per-trait bit values in ${used.sieve} and ${used.chart} are illustrative round numbers that sum to 33. The study figures and the descriptions of Brave and Tor come from the sources above.</p></footer>`,
 ].join("\n");
 
-const FONT = readFileSync(join(HERE, "departure-mono.woff2")).toString("base64");
-const CSS = `@font-face{font-family:"Departure Mono";src:url(data:font/woff2;base64,${FONT}) format("woff2");font-display:swap}\n` + readFileSync(join(HERE, "fp.css"), "utf8");
+// Libron for reading, Departure Mono for annotations and anything that can be capitals, Paper Mono for lowercase mono
+const face = (family, file) => `@font-face{font-family:"${family}";src:url(data:font/woff2;base64,${readFileSync(join(HERE, "fonts", file)).toString("base64")}) format("woff2");font-weight:400;font-style:normal;font-display:swap}\n`;
+const CSS = face("Libron", "Libron-Regular.woff2") + face("Departure Mono", "DepartureMono-Regular.woff2") + face("Paper Mono", "PaperMono-Regular.woff2") + readFileSync(join(HERE, "fp.css"), "utf8");
 const THEME_INIT = `<script>try{var t=new URLSearchParams(location.search).get("theme")||localStorage.getItem("iso-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.body.dataset.theme=t}catch(e){}</script>`;
 const THEME_TOGGLE = `document.querySelector("[data-theme-toggle]")?.addEventListener("click",()=>{const next=document.body.dataset.theme==="dark"?"light":"dark";document.body.dataset.theme=next;try{localStorage.setItem("iso-theme",next)}catch(e){}});`;
 const page = k.pageHtml({

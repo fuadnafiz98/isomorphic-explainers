@@ -28,14 +28,14 @@ export function requestFlow() {
   b.push(Ln(56, 83, 274, 83));
   [66, 75, 84].forEach((x) => b.push(Ci(x, 74.5, 2.2)));
   b.push(Rc(96, 69, 118, 11, { rx: 5.5 }));
-  b.push(T(104, 77.5, "news.example", { c: "lbl-s" }));
+  b.push(T(104, 77.5, "news.example", { c: "lbl-c" }));
   b.push(Rc(66, 92, 92, 7, { c: "solid" }));
   b.push(Ln(66, 108, 160, 108, "ln2") + Ln(66, 116, 150, 116, "ln2") + Ln(66, 124, 156, 124, "ln2"));
   b.push(Rc(66, 134, 74, 52));
   b.push(Ln(66, 134, 140, 186, "guide") + Ln(140, 134, 66, 186, "guide"));
   b.push(Rc(176, 94, 90, 62, { c: "box dash" }));
   b.push(T(221, 119, "ad slot", { c: "lbl-s", a: "middle" }));
-  b.push(T(221, 133, "<script>", { c: "lbl-s", a: "middle" }));
+  b.push(T(221, 133, "<script>", { c: "lbl-c", a: "middle" }));
   b.push(Pa("M20 212L310 212L300 226L30 226Z"));
   b.push(Ln(140, 219, 190, 219, "ln2"));
   b.push(T(165, 246, "your MacBook · Chrome", { a: "middle" }));
@@ -66,7 +66,7 @@ export function requestFlow() {
   // messages
   b.push(Arrow(292, 74, 628, 74));
   b.push(T(460, 62, "GET /", { a: "middle" }));
-  b.push(T(460, 91, "User-Agent · Accept-Language · your IP", { c: "lbl-s", a: "middle" }));
+  b.push(T(460, 91, "User-Agent · Accept-Language · your IP", { c: "lbl-c", a: "middle" }));
   b.push(Arrow(628, 124, 292, 124, { dash: true }));
   b.push(T(460, 112, "200 · html + <script src=…/fp.js>", { a: "middle" }));
   b.push(Arrow(292, 196, 628, 196));
