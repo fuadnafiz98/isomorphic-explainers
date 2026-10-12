@@ -1,5 +1,5 @@
 // The flat diagrams of the page: one monochrome line language, a different kind of drawing in each figure
-// (sequence, pixel grid, crowd matrix, chart, browser window, matrix, three windows). Numbers come from model.mjs.
+// (sequence, devtools, chart, browser window, three windows). The interactive ones are Hairline figures in hl/.
 import * as M from "./model.mjs";
 
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -110,104 +110,6 @@ export function requestHeaders() {
     </div></div></div>`;
 }
 
-// ── FIG 4: one probe, two machines ────────────────────────────────────
-function coverage(w, h, { dx = 0, dy = 0, gamma = 1 }) {
-  const A = [1.4 + dx, h - 1.3 + dy];
-  const B = [w - 1.8 + dx, 1.4 + dy];
-  const half = 1.25;
-  const out = [];
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      let n = 0;
-      for (let sy = 0; sy < 5; sy++) {
-        for (let sx = 0; sx < 5; sx++) {
-          const px = x + (sx + 0.5) / 5;
-          const py = y + (sy + 0.5) / 5;
-          const vx = B[0] - A[0];
-          const vy = B[1] - A[1];
-          const t = Math.max(0, Math.min(1, ((px - A[0]) * vx + (py - A[1]) * vy) / (vx * vx + vy * vy)));
-          const d = Math.hypot(px - (A[0] + vx * t), py - (A[1] + vy * t));
-          if (d <= half) n++;
-        }
-      }
-      out.push(Math.round(255 * (n / 25) ** gamma));
-    }
-  }
-  return out;
-}
-export function pixelGrids() {
-  const W = 12;
-  const H = 8;
-  const C = 26;
-  const a = coverage(W, H, {});
-  const b = coverage(W, H, { dx: 0.21, dy: 0.12, gamma: 0.82 });
-  const diff = a.map((v, i) => (v !== b[i] ? i : -1)).filter((i) => i >= 0);
-  const grid = (x0, y0, vals, other, title, sub) => {
-    const g = [T(x0, y0 - 30, title), T(x0, y0 - 14, sub, { c: "lbl-s" })];
-    vals.forEach((v, i) => {
-      const x = x0 + (i % W) * C;
-      const y = y0 + Math.floor(i / W) * C;
-      g.push(`<rect class="px" x="${x}" y="${y}" width="${C}" height="${C}" style="--a:${(v / 255).toFixed(3)}"/>`);
-      g.push(`<text class="px-t${v > 150 ? " on" : ""}" x="${x + C / 2}" y="${y + C / 2 + 3}" text-anchor="middle">${v === 0 ? "·" : v}</text>`);
-      if (v !== other[i]) g.push(`<rect class="box dash nofill" x="${x + 1.5}" y="${y + 1.5}" width="${C - 3}" height="${C - 3}"/>`);
-    });
-    g.push(Rc(x0, y0, W * C, H * C, { c: "box nofill" }));
-    return g.join("");
-  };
-  const body = [];
-  body.push(grid(24, 70, a, b, "MacBook Pro · Safari", "coverage of each pixel, 0 to 255"));
-  body.push(grid(564, 70, b, a, "ThinkPad · Chrome", "same instructions, different rounding"));
-  // the shared instruction in the middle
-  body.push(Rc(356, 100, 188, 110));
-  body.push(T(450, 124, "same drawing code", { a: "middle", c: "lbl-s" }));
-  body.push(T(450, 148, 'ctx.fillText("/", …)', { a: "middle" }));
-  body.push(T(450, 172, "same font · same size", { a: "middle", c: "lbl-s" }));
-  body.push(T(450, 192, `${diff.length} of ${W * H} pixels differ`, { a: "middle" }));
-  body.push(Arrow(356, 155, 340, 155));
-  body.push(Arrow(544, 155, 560, 155));
-  // the hashes
-  const ha = hex8(a.join(","));
-  const hb = hex8(b.join(","));
-  body.push(Rc(24, 300, 312, 36, { c: "box soft" }) + T(40, 323, `hash  ${ha}`));
-  body.push(Rc(564, 300, 312, 36, { c: "box soft" }) + T(580, 323, `hash  ${hb}`));
-  body.push(T(450, 323, "≠", { a: "middle" }));
-  return svg(900, 352, body.join(""), "Two 12 by 8 pixel grids showing the same diagonal stroke drawn by two machines. Edge pixels have different coverage values, so the hashes of the two images differ.");
-}
-
-// ── FIG 5: every bit halves the crowd ─────────────────────────────────
-export function halving() {
-  const N = 8;
-  const C = 17;
-  const order = Array.from({ length: N * N }, (_, i) => i).sort((p, q) => parseInt(hex8("r" + p), 16) - parseInt(hex8("r" + q), 16));
-  const YOU = 27;
-  order.splice(order.indexOf(YOU), 1);
-  order.unshift(YOU);
-  const rank = new Map(order.map((cell, r) => [cell, r]));
-  const b = [];
-  const labels = [["everyone", "0 bits"], ["1 bit", "half"], ["2 bits", "a quarter"], ["3 bits", "an eighth"]];
-  labels.forEach(([head, sub], step) => {
-    const x0 = 40 + step * 196;
-    const y0 = 56;
-    const keep = (N * N) >> step;
-    b.push(T(x0, 28, head), T(x0, 44, sub, { c: "lbl-s" }));
-    for (let i = 0; i < N * N; i++) {
-      const x = x0 + (i % N) * C + C / 2;
-      const y = y0 + Math.floor(i / N) * C + C / 2;
-      const alive = rank.get(i) < keep;
-      if (i === YOU) b.push(Ci(x, y, 5.6, "box") + Ci(x, y, 2.8, "solid"));
-      else b.push(Ci(x, y, alive ? 3 : 1.4, alive ? "solid" : "faintdot"));
-    }
-    b.push(T(x0, y0 + N * C + 20, `${keep} of 64`, { c: "lbl-s" }));
-    if (step < 3) b.push(Arrow(x0 + N * C + 10, y0 + 68, x0 + N * C + 40, y0 + 68));
-  });
-  b.push(Ln(838, 56, 838, 192, "guide"));
-  b.push(T(850, 100, "…", { c: "lbl" }));
-  b.push(T(850, 128, "33 bits:", { c: "lbl" }));
-  b.push(T(850, 146, "1 in 8.6", { c: "lbl-s" }));
-  b.push(T(850, 160, "billion", { c: "lbl-s" }));
-  return svg(960, 232, b.join(""), "Four 8 by 8 grids of dots. Each extra bit halves the number of dots that still look like you, from 64 to 32, 16 and 8. Thirty-three bits would leave one of 8.6 billion.");
-}
-
 // ── FIG 6: the crowd as the sieves read ───────────────────────────────
 export function crowdChart() {
   const X0 = 96;
@@ -229,8 +131,14 @@ export function crowdChart() {
   b.push(Ln(X0, Y1, X1, Y1));
   const series = (mode, pick, cls) => {
     const pts = Array.from({ length: M.TRAITS.length + 1 }, (_, k) => [xAt(k), yOf(pick(M.reading(mode, k)))]);
-    b.push(`<polyline class="${cls}" points="${pts.map(([x, y]) => `${f1(x)},${f1(y)}`).join(" ")}"/>`);
-    pts.forEach(([x, y]) => b.push(Rc(x - 3, y - 3, 6, 6, { c: cls === "ln" ? "solid" : "box" })));
+    const line = pts.map(([x, y]) => `${f1(x)},${f1(y)}`).join(" ");
+    // the open curve is the subject: a soft area under it, a heavier line, and its value at every step
+    if (cls === "ln") b.push(`<polygon points="${line} ${f1(X1)},${Y1} ${f1(X0)},${Y1}" style="fill:var(--side);stroke:none;opacity:.55"/>`);
+    b.push(`<polyline class="${cls}"${cls === "ln" ? ' style="stroke-width:1.8"' : ""} points="${line}"/>`);
+    pts.forEach(([x, y]) => b.push(Rc(x - 3.5, y - 3.5, 7, 7, { c: cls === "ln" ? "solid" : "box" })));
+    if (cls === "ln") {
+      pts.slice(0, -1).forEach(([x, y], k) => b.push(T(x + 9, y - 8, M.fmtCount(pick(M.reading(mode, k))), { c: "lbl-s" })));
+    }
     return pts[pts.length - 1];
   };
   const open = series("open", (r) => r.pool, "ln");
@@ -239,7 +147,6 @@ export function crowdChart() {
   b.push(T(open[0] + 12, open[1] + 4, "no protection: just you"));
   b.push(T(carry[0] + 12, carry[1] + 4, `farbled, what carries over: ${M.fmtCount(M.reading("farbled", M.TRAITS.length).poolStable)}`));
   b.push(T(uni[0] + 12, uni[1] + 4, `uniform: ${M.fmtCount(M.reading("uniform", M.TRAITS.length).pool)}`));
-  b.push(T(X0, 20, "people who look like you", { c: "lbl-s" }));
   return svg(1000, 330, b.join(""), "A step chart on a log scale. The crowd that looks like you falls from 8 billion to one after seven traits with no protection. With farbling only the headers, screen and time zone carry over between sessions, leaving about 244 thousand. With uniform answers about 2 billion remain.");
 }
 
@@ -268,22 +175,6 @@ export function trackerLog() {
       </div>
     </div>
   </div></div>`;
-}
-
-// ── FIG 8: what survives what ─────────────────────────────────────────
-export function survives() {
-  const S = { same: "■", change: "□", maybe: "◧" };
-  const rows = [
-    ["Clear cookies", "change", "same", "same"],
-    ["Open a private window", "change", "same", "same"],
-    ["Switch on a VPN", "same", "change", "same"],
-    ["Move to another network", "same", "change", "same"],
-    ["Update the browser", "same", "same", "maybe"],
-    ["Install a font, change the display", "same", "same", "change"],
-  ];
-  const cell = (k) => `<td class="m m-${k}"><span>${k === "same" ? "stays" : k === "change" ? "changes" : "may shift"}</span></td>`;
-  const body = rows.map(([name, a, b, c]) => `<tr><th>${name}</th>${cell(a)}${cell(b)}${cell(c)}</tr>`).join("");
-  return `<div class="stage"><table class="matrix"><thead><tr><th></th><th>cookie</th><th>IP address</th><th>fingerprint</th></tr></thead><tbody>${body}</tbody></table></div>`;
 }
 
 // ── FIG 9: one test, three browsers ───────────────────────────────────

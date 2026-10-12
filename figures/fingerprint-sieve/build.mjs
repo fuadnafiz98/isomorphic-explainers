@@ -453,7 +453,15 @@ const namespaced = (name, file) => {
 };
 const LIVE = readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA));
 const PROBE = readFileSync(join(HERE, "probe.js"), "utf8");
-const script = [kitScript(), latheScript(), namespaced("MODEL", join(HERE, "model.mjs")), LIVE, PROBE].join("\n");
+// the Hairline figures: its kernel untouched, each figure in its own scope, and the page's host
+const HL_NAMES = ["halving", "canvas", "survives", "needle"];
+const HL_JS = [
+  readFileSync(join(HERE, "..", "..", "kit", "hairline-kernel.js"), "utf8"),
+  "const HL_FIGS = {};",
+  ...HL_NAMES.map((n) => `(function (hairline) {\n${readFileSync(join(HERE, "hl", `${n}.js`), "utf8")}\n})((f) => { HL_FIGS[f.name] = f; });`),
+  readFileSync(join(HERE, "hl-host.js"), "utf8"),
+].join("\n");
+const script = [kitScript(), latheScript(), namespaced("MODEL", join(HERE, "model.mjs")), LIVE, PROBE, HL_JS].join("\n");
 
 let figCount = 0;
 const used = {};
@@ -462,6 +470,14 @@ const fig = (caption, inner, foot = "", key = "") => {
   figCount += 1;
   if (key) used[key] = num(figCount);
   return `<figure><div class="fh"><b>${num(figCount)}</b><span>[ ${caption} ]</span></div>${inner}${foot ? `<div class="ff">${foot}</div>` : ""}</figure>`;
+};
+/** A Hairline figure in its card: the drawing, a legend that lights with it, the read-out and a play button. */
+const hlFig = (name, caption, lead, items, foot) => {
+  figCount += 1;
+  const rows = items.map(([a, b], i) => `<li data-k="${i}"><span>${a}</span><b>${b}</b></li>`).join("");
+  return `<figure class="hlf"><div class="fh"><b>${num(figCount)}</b><span>[ ${caption} ]</span></div>` +
+    `<div class="hl-row"><div class="hl" data-hl="${name}"></div><div class="hl-side"><p class="hl-lead">${lead}</p><ol class="hl-legend" data-hl-legend>${rows}</ol></div></div>` +
+    `<div class="ff"><span class="readout" data-hl-read>rest</span><span class="cap-t">${foot}</span><button type="button" class="chip" data-hl-play aria-pressed="false">play tour</button></div></figure>`;
 };
 const section = (title, text) => `<div class="prose"><h2>${title}</h2>${text ? `<p>${text}</p>` : ""}</div>`;
 
@@ -524,14 +540,15 @@ const body = [
   section("What can the script read?", "Six parts of the laptop, six probes. None of them asks permission."),
   fig("a MacBook, and what each part gives away", macbook(), `<p class="cap-t">The numbers are the browser APIs a script calls; the parts are where the answer comes from.</p>`),
   section("How does one probe tell machines apart?", "Same drawing code, different rounding. The edge pixels differ, so the hash does."),
-  fig("the canvas probe, on two machines", DG.pixelGrids(), `<p class="cap-t">The pixel values are computed for this figure with two slightly different renderers.</p>`),
+  hlFig("canvas", "the canvas probe, on two machines", "Same drawing instructions, run on two machines. Move across the board.", [["A", "MacBook Pro · Safari"], ["B", "ThinkPad · Chrome"]], "Bright pillars are the pixels that come out differently. One changed pixel changes the whole hash."),
   section("Why is that enough?", "Every bit halves the crowd. Thirty-three bits leave one person."),
-  fig("every bit halves the crowd", DG.halving()),
+  hlFig("halving", "every question halves the crowd", "Move along the front to ask more questions. Whoever answers differently drops out.", [0,1,2,3,4,5,6].map((k) => [`${k} question${k === 1 ? "" : "s"}`, k === 6 ? "just you" : `${64 >> k} left`]), "Sixty-four pucks stand in for the crowd. The real one is 8.6 billion, which takes 33 questions."),
   fig("the crowd, as each sieve reads you", DG.crowdChart(), `<p class="cap-t">Bits per trait are illustrative; the arithmetic is exact. Real traits overlap, so real totals are lower.</p>`, "chart"),
   section("What does the tracker see?", "Cookies change and IPs change. The fingerprint does not."),
   fig("a tracker's visitor log", DG.trackerLog()),
+  hlFig("needle", "one needle, five visits", "Each card is one visit, cut where it can be told apart. Move the needle across the top.", [["holes 1–2 · cookie", "lifts some visits"], ["holes 3–4 · address", "lifts some visits"], ["holes 5–8 · fingerprint", "lifts all five"]], "The cookie and the address differ between visits. The fingerprint cut is the same on every card, so one pass collects the whole history."),
   section("What changes it?", "Almost nothing you do on purpose."),
-  fig("what survives what", DG.survives(), `<p class="cap-t">About 37% of returning visitors in the 2010 Panopticlick data showed at least one change, so trackers match loosely.</p>`),
+  hlFig("survives", "what survives what", "Pick a row. The pegs that action knocks down are what changes. Short is the cookie, middle the address, tall and bright the fingerprint.", [["Clear cookies", "cookie changes"], ["Open a private window", "cookie changes"], ["Switch on a VPN", "address changes"], ["Move to another network", "address changes"], ["Update the browser", "fingerprint may shift"], ["Install a font, change the display", "fingerprint changes"]], "About 37% of returning visitors in the 2010 Panopticlick data showed at least one change, so trackers match loosely."),
   section("How do browsers fight back?", "Three strategies, one test, three answers."),
   fig("the same canvas test in three browsers", DG.threeBrowsers(), `<p class="cap-t">Hashes are illustrative. Brave seeds noise per site and session; Tor makes everyone answer alike.</p>`),
   section("Try it", "Everything here runs in this tab, and nothing is sent."),

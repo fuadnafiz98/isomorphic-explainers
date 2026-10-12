@@ -3,3 +3,4 @@ dist
 .wrangler
 shots
 .DS_Store
+figures/**/hl/hairline-*
