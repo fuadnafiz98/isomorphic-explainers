@@ -6,6 +6,12 @@
       "sourceType": "github",
       "skillPath": "SKILL.md",
       "computedHash": "4098dee2b44b4045aee9442758f5024449a5c03b3d1de0620f6b1e7f89d0e010"
+    },
+    "hairline-create": {
+      "source": "lucasmarkes/hairline",
+      "sourceType": "github",
+      "skillPath": "skills/hairline-create/SKILL.md",
+      "computedHash": "836906905802fe12e344719545b8ff4d99e3741af044454309b1f8dfe793a948"
     }
   }
 }
