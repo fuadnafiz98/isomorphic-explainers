@@ -193,13 +193,13 @@ const defs = `<svg width="0" height="0" style="position:absolute" aria-hidden="t
 
 const keep = [
   ["The loop is the product.", "Propose, predict, confirm in the lab, add the row, refit. Blends 10 and 11 are the model's own proposals that were then mixed and added back. That is active learning in one round, and it is the shape of an agent."],
-  ["Error bars are an agent's \"should I go to the lab?\" signal.", "GPR returns a mean and a spread. A wide band over a candidate recipe is the model saying it is guessing."],
+  ["Error bars say when to go back to the lab.", "GPR returns a mean and a spread. A wide band over a candidate recipe is the model saying it is guessing."],
   ["Two models answering one question is a cheap sanity check.", "RSM, ANN and GPR land in the same region of recipe space. Disagreement is a flag."],
   ["The interpretable layer is how a formulator will trust it.", "RSM's effect ranking and the ANN's gradients give 'sulfur up, tan δ down', which a chemist can argue with."],
   ["Small design spaces need no clever optimiser.", "Three knobs on a discrete grid: enumerate everything, score everything, take the minimum in seconds."],
 ];
 const doubt = [
-  ["11 recipes is the real sample size.", "The 326 rows come from 11 recipes, so rows from one recipe are close cousins. The paper says 5-fold cross-validation and does not say folds were split by recipe. My read: R² = 1.00 and an error of about 6×10⁻⁵ on n_relax looks like memorising neighbours, not generalising to a new recipe."],
+  ["11 recipes is the real sample size.", "The 326 rows come from 11 recipes, so rows from one recipe are close cousins. The paper says 5-fold cross-validation and does not say folds were split by recipe. Taken at face value, R² = 1.00 and an error of about 6×10⁻⁵ on n_relax looks like memorising neighbours, not generalising to a new recipe. That is an inference from the setup, not a claim in the paper."],
   ["The proposals do not hit the target.", "σ_relax is on target for RSM and within 8 to 24 % for the others, but tan δ lands 49 to 73 % high and n_relax is 24 to 45 % off in every method. The models agree with each other more than with the target."],
   ["RSM's pick sits on the boundary and predicts nonsense.", "Void 30.0 is the upper bound of the search, and the predicted durometer is 0.45 Shore A, which is barely a solid. An optimiser exploiting the edge of a surrogate is exactly what to watch for in an agent."],
   ["Do not copy Table 4.", "The printed coefficients are rounded to two decimals. Evaluated by hand they give σ_relax ≈ 252 kPa for 2.5 pph sulfur, 80 pph oil, 0 % void, where Fig. 23 plots about 163. Refit from data."],
@@ -208,7 +208,7 @@ const doubt = [
 ];
 const li = (rows) => rows.map(([h, t]) => `<li><b>${h}</b> ${t}</li>`).join("");
 
-const SKETCH = `<pre class="code"><code># my sketch of the paper's pipeline, not the authors' code
+const SKETCH = `<pre class="code"><code># a sketch of the paper's pipeline, not the authors' code
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
 import numpy as np
@@ -233,8 +233,8 @@ const SOURCES = [
 const body = [
   defs,
   `<nav class="top mono-s"><a href="/">← all figures</a><span>RUBBER / DATA-DRIVEN FORMULATION</span><button type="button" data-theme-toggle>theme</button></nav>`,
-  `<header><h1>Eleven rubber recipes, one model, a twelfth recipe on demand</h1><p class="dek">What a 2022 natural-rubber paper actually does, in the words of someone who writes the software side.</p></header>`,
-  `<div class="prose lead"><p>I build AI agents for rubber work. I am a software developer, not a polymer chemist, so I read this paper the way I read an API: what goes in, what comes out, what is the loop, and where does it lie. This page is that reading. Every figure is redrawn; the numbers are the paper's. Where I read a value off a plot, the page says so.</p></div>`,
+  `<header><h1>Eleven rubber recipes, one model, a twelfth recipe on demand</h1><p class="dek">What a 2022 natural-rubber paper does, how its pieces work, and how an engineer can get the most out of reading it.</p></header>`,
+  `<div class="prose lead"><p>This 2022 paper from the University of Wisconsin-Madison learns natural-rubber recipes from a very small experimental dataset, then runs the learned model backwards to propose a recipe for a target set of properties. It is a surrogate-modelling and inverse-design paper set in a rubber lab, and it reads best as one.</p><p>For an engineer the most useful order is: the inputs and outputs of the function being learned, how every row of data was produced, which model sits on which rung and what each costs, how the inverse step works, and then what the evidence does not support. The page follows that order. Every figure is redrawn; the numbers are the paper's. Where a value was read off a plot, the page says so.</p></div>`,
   words,
   section("What problem is this?", p("A formulator picks sulfur, oil and a foaming level, bakes it, measures it, and tries again. Skill means fewer laps. The paper's claim is that you can learn a function f: recipe → properties from a small dataset, then run it backwards: say what you want, get a recipe to try first.")),
   fig("loops", "two loops", loops(), `<p class="cap-t">The left loop is a person. The right loop is the same loop with a model standing in for most of the laps.</p>`),
@@ -242,25 +242,25 @@ const body = [
   fig("knobs", "knob board", knobBoard(), `<span class="readout" data-knob-read>sulfur 1.5 · oil 40 · voids 10</span><span class="cap-t">Arrows show the push relative to where the sliders started, weighted by the paper's Pearson r. They are direction and rough strength, not predictions.</span>`),
   section("Where does the data come from?", p("Seven stations. Steps 1 to 3 make the specimen; 4 to 7 turn it into four numbers. Click a station.")),
   fig("pipeline", "from compound to a row in a table", pipeline() + `<div class="step"><b data-st-title>1 Mix</b><span data-st-text></span></div>`, `<span class="cap-t">The paper reports 326 data instances from 11 blends. Fig. 10 shows one blend at ten void levels, which is where most of the multiplication comes from.</span>`),
-  section("What do the four numbers mean?", p("These four are the whole target. I would have called them hardness, load, give and leak. Pick one and move its slider.")),
+  section("What do the four numbers mean?", p("These four are the whole target: in plain words, hardness, load, give and leak. Pick one and move its slider.")),
   fig("four", "the four measurements, and voids", fourNumbers(), `<span class="cap-t">Curves are drawn from the paper's formulas and fitted slopes. Stress values by void level are read off Fig. 11.</span>`),
   section("What do the knobs do?", p("Pearson's r is a number between −1 and 1: whether two columns move together. Read the bottom-left block: inputs against outputs. Hover a cell.")),
   fig("matrix", "correlation matrix, as printed", `<div class="stage"><svg class="flat" viewBox="0 0 560 420" data-matrix role="img" aria-label="Pearson correlation matrix of three inputs and four outputs"></svg></div><div class="verdict mx" data-matrix-read>hover a cell</div>`, `<span class="cap-t">Filled circle: the pair rises together. Hollow: one rises as the other falls. Size is |r|. The three inputs are almost uncorrelated with each other, which is what a decent experiment design looks like.</span>`),
   section("Why isn't a straight line enough?", p("Because the effects bend and saturate. Sulfur's effect on n_relax is mostly done by 1.5 pph. Going from 40 to 80 pph oil barely moves stiffness at 2.5 pph sulfur. And oil raises tan δ at one sulfur level and lowers it at another. That is the whole case for the next section.")),
   fig("bend", "three ways a straight line fails", `<div class="three" data-bend></div>`, `<span class="cap-t">Left: n_relax against sulfur, with the paper's error bars (Fig. 31). Middle: stress by oil (Figs. 20, 21). Right: tan δ by oil (Fig. 25). Values are read off the plots.</span>`),
-  section("Same stiffness, two recipes", p("This is my favourite figure. Both lines are stiffness lost to foam, at 80 pph oil. The 2.5 pph recipe starts stiffer and loses 4.4 kPa per percent of voids; the 1.5 pph recipe loses 2.1. At about 16 % void they meet. If an agent returns one recipe, there are others with the same measured property.")),
+  section("Same stiffness, two recipes", p("Both lines are stiffness lost to foam, at 80 pph oil. The 2.5 pph recipe starts stiffer and loses 4.4 kPa per percent of voids; the 1.5 pph recipe loses 2.1. At about 16 % void they meet. If an agent returns one recipe, there are others with the same measured property.")),
   fig("cross", "stress against void content", `<div class="stage"><svg class="flat" viewBox="0 0 760 340" data-cross role="img" aria-label="Maximum relaxation stress against void content for several recipes"></svg></div><div class="ctl"><span class="ctl-l">void</span><input type="range" min="0" max="35" step="0.5" value="16" data-cross-slider><output data-cross-out></output><span class="ctl-l">show</span><span class="chips" data-cross-chips></span></div>`, `<span class="readout" data-cross-read></span><span class="cap-t">Slopes are printed in the paper. Intercepts are read off Figs. 22 and 23 (±5 kPa). Fig. 24's legend is swapped in the paper; this follows Figs. 22 and 23 and the text.</span>`),
   section("Four models on one ladder", p("The authors fit the same data four ways, from least to most flexible. The accuracy rises with the flexibility, and the paper's pitch is that you can choose your rung: a cheap, readable one or an accurate, opaque one.")),
-  fig("ladder", "cross-validated R², Table 7", ladder(), `<span class="cap-t">R² is the share of variance explained. 1.00 means a perfect line. See the second list at the bottom for why I would test that 1.00 before believing it.</span>`),
+  fig("ladder", "cross-validated R², Table 7", ladder(), `<span class="cap-t">R² is the share of variance explained. 1.00 means a perfect line. See the second list at the bottom for why that 1.00 deserves a test before it is believed.</span>`),
   fig("ann", "what the neural network is", network(), `<span class="cap-t">Layer sizes and counts are Table 5. TensorFlow 2.0, Adam, mean absolute error, dropout and early stopping to hold off overfitting on so little data.</span>`),
-  section("The model that draws its own doubt", p("A Gaussian process is the one that surprised me. Think of it as nearest-neighbour with a smooth kernel, plus an honest error bar that is tight near data and wide away from it. Click to add measurements and watch the band collapse around them. That band is how a model decides what experiment to run next.")),
+  section("The model that draws its own doubt", p("The Gaussian process is the odd one out. Think of it as nearest-neighbour with a smooth kernel, plus an honest error bar that is tight near data and wide away from it. Click to add measurements and watch the band collapse around them. That band is how a model decides what experiment to run next.")),
   fig("gp", "gaussian process, live", gpPlay(), `<span class="cap-t">RBF kernel, same family as the paper's scikit-learn GPR. The shaded band is ±1.96 σ, the 95 % interval used in the paper's Fig. 34.</span>`),
   section("Run it backwards", p("The model maps recipe to properties. To get the recipe, the paper scores every candidate against the target and takes the best. With three knobs on a coarse grid that is about 6,600 candidates and takes seconds. If the space were larger, they turn to Bayesian optimisation.")),
   fig("reverse", "reverse engineering", `<div class="stage flatwrap">${reverse()}</div>`, `<span class="cap-t">The target came from a footwear material they characterised: σ_relax 90 kPa, n_relax −0.0527, tan δ 0.066.</span>`),
-  fig("table6", "what each method proposed, Table 6", targetTable(), `<span class="cap-t">Percent error vs target is my arithmetic from the printed numbers. The paper does not state it. A filled badge marks anything more than 20 % off.</span>`),
-  section("What I would keep, and what I would doubt", p("This is the part I wrote for my own team before wiring anything from this paper into an agent.")),
-  `<div class="two"><div><h3>Keep</h3><ul class="bul">${li(keep)}</ul></div><div><h3>Doubt</h3><ul class="bul">${li(doubt)}</ul></div></div>`,
-  section("If I were wiring it up", p("This is my sketch, not the authors' code. The one thing I would change from the paper is to split the folds by recipe, so the score says how it does on a recipe it has not seen.")),
+  fig("table6", "what each method proposed, Table 6", targetTable(), `<span class="cap-t">Percent error vs target is computed here from the printed numbers. The paper does not state it. A filled badge marks anything more than 20 % off.</span>`),
+  section("What the evidence supports, and what it does not", p("The engineering reading: what carries over to a system that proposes recipes, and what to verify first.")),
+  `<div class="two"><div><h3>Worth reusing</h3><ul class="bul">${li(keep)}</ul></div><div><h3>Check first</h3><ul class="bul">${li(doubt)}</ul></div></div>`,
+  section("As code", p("A sketch of the paper's pipeline, not the authors' code. The change worth making is to split the folds by recipe, so the score says how the model does on a recipe it has not seen.")),
   SKETCH,
   `<footer><div class="mono-s">SOURCES</div><ul>${SOURCES.map(([t, u]) => `<li><a href="${u}">${t}</a></li>`).join("")}</ul><p>Everything on this page is redrawn from the paper's text, tables and plots; no figure image is reused. Values marked read were taken off the plots and are approximate. The model proposals and R² values are printed in Tables 6 and 7.</p></footer>`,
 ].join("\n");
