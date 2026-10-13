@@ -38,6 +38,11 @@ const fig = (key, label, inner, foot = "", cls = "") => {
 const section = (title, text) => `<div class="prose"><h2>${title}</h2>${text}</div>`;
 const p = (t) => `<p>${t}</p>`;
 
+// a Hairline figure in its card: the drawing, notes on what it shows, a slider on its own number and a play button
+const hlFig = (key, name, label, lead, bullets, unit, foot) => fig(key, label,
+  `<div class="hl-row"><div class="hl" data-hl="${name}"></div><div class="hl-side"><p class="hl-lead">${lead}</p><ul class="hl-notes">${bullets.map((t) => `<li>${t}</li>`).join("")}</ul><label class="knob tight hl-slider"><span class="knob-l"><b>${unit}</b></span><input type="range" data-hl-slider><output data-hl-out></output></label></div></div>`,
+  `<span class="readout" data-hl-read>rest</span><span class="cap-t">${foot}</span><button type="button" class="chip" data-hl-play aria-pressed="false">play tour</button>`);
+
 // ───────────────────────────── FIG: two loops ─────────────────────────────
 function loops() {
   const b = [];
@@ -106,7 +111,7 @@ function knobBoard() {
     return `<label class="knob"><span class="knob-l"><b>${inp.sym}</b><i>${inp.role}</i></span><input type="range" min="${inp.lo}" max="${inp.hi}" step="${inp.id === "s" ? 0.1 : 1}" value="${inp.id === "s" ? 1.5 : inp.id === "p" ? 40 : 10}" data-knob="${inp.id}"><output data-knob-out="${inp.id}"></output><span class="knob-u">${inp.unit}</span></label>`;
   }).join("");
   const outs = M.OUTPUTS.map((o) => `<li data-out="${o.id}"><span class="o-sym">${o.sym}</span><span class="o-arrow" data-arrow></span><span class="o-what">${o.what}</span></li>`).join("");
-  return `<div class="knobboard"><div class="kb-in">${rows}<p class="mono-s kb-note">Held fixed in all 11 blends: NaHCO₃ 8 pph, plus stearic acid, ZnO and TMTD. Betapreno natural rubber, ammonia-free.</p></div><div class="kb-mid"><svg viewBox="0 0 220 200" class="cyl" role="img" aria-label="A 10 mm by 10 mm cylinder whose voids grow with the void slider"><rect class="box" x="40" y="40" width="140" height="130" rx="2"/><ellipse class="box soft" cx="110" cy="40" rx="70" ry="16"/><g data-voids></g><text class="lbl-c" x="110" y="190" text-anchor="middle">10 mm × 10 mm specimen, side view</text></svg></div><ul class="kb-out">${outs}</ul></div>`;
+  return `<div class="knobboard"><div class="kb-in">${rows}<p class="mono-s kb-note">Held fixed in all 11 blends: NaHCO₃ 8 pph, plus stearic acid, ZnO and TMTD. Betapreno natural rubber, ammonia-free.</p></div><div class="kb-mid"><div class="hl kb-hl" data-hl="slicer" data-hl-embed></div><p class="mono-s kb-cap">the specimen, sliced: the void slider sets the bubbles; hover a slice</p></div><ul class="kb-out">${outs}</ul></div>`;
 }
 
 // ───────────────────────────── FIG: the four-number tabs ─────────────────────────────
@@ -253,8 +258,17 @@ const body = [
   fig("knobs", "knob board", knobBoard(), `<span class="readout" data-knob-read>sulfur 1.5 · oil 40 · voids 10</span><span class="cap-t">Arrows show the push relative to where the sliders started, weighted by the paper's Pearson r. They are direction and rough strength, not predictions.</span>`),
   section("Where does the data come from?", p("Seven stations. Steps 1 to 3 make the specimen; 4 to 7 turn it into four numbers. Click a station.")),
   fig("pipeline", "from compound to a row in a table", pipeline() + `<div class="step"><b data-st-title>1 Mix</b><span data-st-text></span></div>`, `<span class="cap-t">The paper reports 326 data instances from 11 blends. Fig. 10 shows one blend at ten void levels, which is where most of the multiplication comes from.</span>`),
-  section("What do the four numbers mean?", p("These four are the whole target: in plain words, hardness, load, give and leak. Pick one and move its slider.")),
+  hlFig("slicer", "slicer", "what the µCT sees, slice by slice", "Move up and down the stack. The slice you point at is held open and the slices above it step back.",
+    ["Each slice is one µCT cross-section. Dark bubbles are voids (paper Figs. 5 and 9).", "The slider is the void content. More bubbles on every slice, softer and weaker rubber (Figs. 11 and 15).", "The scatter differs from slice to slice, as in a real scan."],
+    "voids %", "A schematic of the method, not a reconstruction of the paper's scans."),
+  section("What do the four numbers mean?", p("These four are the whole target: in plain words, hardness, load, give and leak. Start with what a foam does when it is squeezed, then pick a number and move its slider.")),
+  hlFig("press", "press", "a foam under a press, in three zones", "Move down the figure to squeeze the block. The rod at the side is the stress it pushes back with.",
+    ["Zone 1: the gaps close evenly and the rod rises gently.", "Zone 2: the walls buckle sideways and the rod barely moves. This is the plateau.", "Zone 3: the gaps are shut, the walls themselves squash and the rod climbs fast: densification (paper Fig. 1)."],
+    "plateau ends %", "Stress is drawn from Fig. 1's three stretches (≈ 3 kPa at 20 %, ≈ 7 kPa at 45 %, ≈ 30 kPa at 75 %)."),
   fig("four", "the four measurements, and voids", fourNumbers(), `<span class="cap-t">Curves are drawn from the paper's formulas and fitted slopes. Stress values by void level are read off Fig. 11.</span>`),
+  hlFig("tank", "tank", "relaxation, as three draining tubes", "Each tube is a rubber squashed and held. Its level is the stress still left. Hover one to slow time.",
+    ["0.5 pph sulfur drains furthest: the most chain movement, so the most relaxation.", "1.5 and 2.5 pph barely differ (n ≈ −0.013 and −0.011, paper Fig. 31).", "Each lap is ten minutes. The level falls as t to the minus n (paper Fig. 4)."],
+    "clock rate", "Levels use the paper's measured n for each sulfur level, with the level window 0.80 to 1.00 of the starting stress."),
   section("What do the knobs do?", p("Pearson's r is a number between −1 and 1: whether two columns move together. Read the bottom-left block: inputs against outputs. Hover a cell.")),
   fig("matrix", "correlation matrix, as printed", `<div class="stage"><svg class="flat" viewBox="0 0 560 420" data-matrix role="img" aria-label="Pearson correlation matrix of three inputs and four outputs"></svg></div><div class="verdict mx" data-matrix-read>hover a cell</div>`, `<span class="cap-t">Filled circle: the pair rises together. Hollow: one rises as the other falls. Size is |r|. The three inputs are almost uncorrelated with each other, which is what a decent experiment design looks like.</span>`),
   section("Why isn't a straight line enough?", p("Because the effects bend and saturate. Sulfur's effect on n_relax is mostly done by 1.5 pph. Going from 40 to 80 pph oil barely moves stiffness at 2.5 pph sulfur. And oil raises tan δ at one sulfur level and lowers it at another. That is the whole case for the next section.")),
@@ -265,6 +279,9 @@ const body = [
   fig("ladder", "cross-validated R², Table 7", ladder(), `<span class="cap-t">R² is the share of variance explained. 1.00 means a perfect line. See the second list at the bottom for why that 1.00 deserves a test before it is believed.</span>`),
   fig("ann", "what the neural network is", network(), `<span class="cap-t">Layer sizes and counts are Table 5. TensorFlow 2.0, Adam, mean absolute error, dropout and early stopping to hold off overfitting on so little data.</span>`),
   section("The model that draws its own doubt", p("The Gaussian process is the odd one out. Think of it as nearest-neighbour with a smooth kernel, plus an honest error bar that is tight near data and wide away from it. Click to add measurements and watch the band collapse around them. That band is how a model decides what experiment to run next.")),
+  hlFig("tarp", "tarp", "the same idea, as a row of slats", "Each slat is the model's expected value. The dashed box above it is how far it could be wrong. Bright slats are measured.",
+    ["Move across the row to preview a new measurement. The slats near it tighten (paper Fig. 8).", "Press to keep it. Nine posts at most.", "The slider is the kernel's reach: how far one measurement's influence carries."],
+    "reach", "Slack, drawn as dashed boxes, is widest where there is no data. That is what the paper suggests guiding the next experiment with."),
   fig("gp", "gaussian process, live", gpPlay(), `<span class="cap-t">RBF kernel, same family as the paper's scikit-learn GPR. The shaded band is ±1.96 σ, the 95 % interval used in the paper's Fig. 34.</span>`),
   section("Run it backwards", p("The model maps recipe to properties. To get the recipe, the paper scores every candidate against the target and takes the best. With three knobs on a coarse grid that is about 6,600 candidates and takes seconds. If the space were larger, they turn to Bayesian optimisation.")),
   fig("reverse", "reverse engineering", `<div class="stage flatwrap">${reverse()}</div>`, `<span class="cap-t">The target came from a footwear material they characterised: σ_relax 90 kPa, n_relax −0.0527, tan δ 0.066.</span>`),
@@ -285,7 +302,14 @@ const THEME_INIT = `<script>try{var t=new URLSearchParams(location.search).get("
 const THEME_TOGGLE = `document.querySelector("[data-theme-toggle]")?.addEventListener("click",()=>{const next=document.body.dataset.theme==="dark"?"light":"dark";document.body.dataset.theme=next;try{localStorage.setItem("iso-theme",next)}catch(e){}});`;
 // live.js is plain browser code; the data and the Gaussian process are inlined from model.mjs so the page and the build never disagree
 const modelSource = readFileSync(join(HERE, "model.mjs"), "utf8").replace(/^export /gm, "");
-const live = `const STATIONS=${JSON.stringify(STATIONS)};\nconst FOUR=${JSON.stringify(FOUR)};\n${modelSource}\n${readFileSync(join(HERE, "live.js"), "utf8")}`;
+const HL_NAMES = ["slicer", "press", "tank", "tarp"];
+const HL_JS = [
+  readFileSync(join(HERE, "..", "..", "kit", "hairline-kernel.js"), "utf8"),
+  "const HL_FIGS = {};",
+  ...HL_NAMES.map((n) => `(function (hairline) {\n${readFileSync(join(HERE, "hl", `${n}.js`), "utf8")}\n})((f) => { HL_FIGS[f.name] = f; });`),
+  readFileSync(join(HERE, "hl-host.js"), "utf8"),
+].join("\n");
+const live = `${HL_JS}\nconst STATIONS=${JSON.stringify(STATIONS)};\nconst FOUR=${JSON.stringify(FOUR)};\n${modelSource}\n${readFileSync(join(HERE, "live.js"), "utf8")}`;
 const page = k.pageHtml({
   title: "Eleven rubber recipes, one model",
   theme: "light",

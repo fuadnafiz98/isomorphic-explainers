@@ -8,7 +8,7 @@ cannot disagree.
 |---|---|
 | How a B-2 flies without a tail: a flying wing on a test bench, stick, flight computers, nine trailing-edge surfaces, buried engines, a rotary launcher | `/b2-spirit/` |
 | How browser fingerprinting works: a sieve machine, a sequence, a request in DevTools, a MacBook with callouts, four Hairline line figures (halving, canvas, needle, survives), a crowd chart, a tracker log, three browsers, and a live probe of your own | `/fingerprint-sieve/` |
-| How a natural-rubber formulation paper works, read by a developer: knob board, lab pipeline, the four measurements, a correlation matrix, a model ladder, a live Gaussian process and the reverse-engineering step | `/rubber-blend/` |
+| How a natural-rubber formulation paper works, read by a developer: knob board, lab pipeline, the four measurements, a correlation matrix, a model ladder, a live Gaussian process, the reverse-engineering step, four Hairline line figures (slicer, press, tank, tarp) and a card for each of the paper's 34 figures | `/rubber-blend/` |
 
 ## Run it
 

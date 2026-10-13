@@ -67,14 +67,10 @@ const polyline = (pts) => pts.map((p, i) => `${i ? "L" : "M"}${p[0].toFixed(1)} 
   const base_text = Object.fromEntries(OUTPUTS.map((o) => [o.id, o.what]));
   const val = { ...base };
   const range = { s: [0.5, 4], p: [0, 80], v: [0, 40] };
-  const R = rng(7);
-  const holes = Array.from({ length: 80 }, () => ({ x: 48 + R() * 124, y: 56 + R() * 106, r: 2 + R() * 4.2 }));
-  const g = $("[data-voids]", root);
-  const els = holes.map((h) => S("circle", { class: "v", cx: h.x.toFixed(1), cy: h.y.toFixed(1), r: 0, opacity: 0 }, g));
+  const slicer = $("[data-hl=\"slicer\"]", root);
   const update = () => {
     $$("[data-knob]", root).forEach((inp) => { val[inp.dataset.knob] = Number(inp.value); $(`[data-knob-out="${inp.dataset.knob}"]`, root).textContent = inp.dataset.knob === "s" ? Number(inp.value).toFixed(1) : inp.value; });
-    const count = Math.round((val.v / 40) * holes.length);
-    els.forEach((e, i) => { const on = i < count; e.setAttribute("r", on ? holes[i].r.toFixed(1) : 0); e.setAttribute("opacity", on ? 0.75 : 0); });
+    if (slicer && slicer.__hl) slicer.__hl.set(clamp(val.v, 1, 40));
     for (const [id, r] of Object.entries(rows)) {
       const net = r[0] * (val.s - base.s) / (range.s[1] - range.s[0]) + r[1] * (val.p - base.p) / (range.p[1] - range.p[0]) + r[2] * (val.v - base.v) / (range.v[1] - range.v[0]);
       const li = $(`[data-out="${id}"]`, root), a = $("[data-arrow]", li), w = $(".o-what", li);
@@ -132,11 +128,7 @@ const polyline = (pts) => pts.map((p, i) => `${i ? "L" : "M"}${p[0].toFixed(1)} 
     const v = value[cur.id];
     out.textContent = cur.id === "n" ? `${f2(v, 4)}` : cur.id === "tan" ? f2(v, 3) : `${v}${cur.unit}`;
     if (cur.id === "void") {
-      S("circle", { cx: 120, cy: 140, r: 94, class: "box soft" }, svg);
-      let area = 0; const total = Math.PI * 84 * 84, want = (v / 100) * total * 1.0;
-      for (const h of slice) { if (area >= want) break; S("circle", { cx: 120 + h.x, cy: 140 + h.y, r: h.r, class: "pt" }, svg); area += Math.PI * h.r * h.r; }
-      const t = S("text", { class: "txt-s", x: 120, y: 256, "text-anchor": "middle" }, svg); t.textContent = "µCT slice, schematic";
-      const F = frame(svg, { px: 270, py: 24, pw: 140, ph: 190, xr: [0, 40], yr: [60, 240], xt: [0, 20, 40], yt: [80, 160, 240], xl: "VOID %", yl: "MAX STRESS kPa" });
+      const F = frame(svg, { px: 60, py: 24, pw: 340, ph: 200, xr: [0, 40], yr: [60, 240], xt: [0, 10, 20, 30, 40], yt: [80, 120, 160, 200, 240], xl: "VOID %", yl: "MAX STRESS kPa" });
       S("path", { class: "cv", d: `M${F.X(0)} ${F.Y(218)}L${F.X(40)} ${F.Y(218 - 3.3 * 40)}` }, svg);
       S("circle", { class: "pt", cx: F.X(v), cy: F.Y(218 - 3.3 * v), r: 4.5 }, svg);
       read.textContent = `voids ${v} %  →  max stress ≈ ${Math.round(218 - 3.3 * v)} kPa. About −3.3 kPa per 1 %, R² 0.97 (blend 1, Fig. 11).`;
