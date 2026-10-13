@@ -5,6 +5,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as k from "../../kit/iso-kit.mjs";
 import * as M from "./model.mjs";
+import { GROUPS, PAPER_FIGS } from "./paperfigs.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SIBLING = join(HERE, "..", "fingerprint-sieve"); // fonts and the base line-language CSS are shared with that page
@@ -178,6 +179,16 @@ function targetTable() {
   return `<div class="stage scroll"><table class="log tight tt">${head}${rec}${rows}${dur}</table></div>`;
 }
 
+
+// ───────────────────────────── every figure of the paper ─────────────────────────────
+function paperFigures() {
+  return GROUPS.map((g) => {
+    const cards = PAPER_FIGS.filter((f) => f.n >= g.from && f.n <= g.to).map((f) =>
+      `<article class="pf" id="paper-fig-${f.n}"><div class="pf-n">PAPER FIG. ${f.n}</div><h4>${esc(f.t)}</h4><p class="pf-shows">${esc(f.shows)}</p><p class="pf-take">${esc(f.take)}</p>${f.see && used[f.see] ? `<a class="pf-see" href="#${f.see}">live on this page: ${used[f.see]} →</a>` : ""}</article>`).join("");
+    return `<section class="pf-group"><h3 class="pf-h">${esc(g.title)} <span>PAPER FIG. ${g.from}${g.to > g.from ? `–${g.to}` : ""}</span></h3><div class="pf-grid">${cards}</div></section>`;
+  }).join("");
+}
+
 // ───────────────────────────── page ─────────────────────────────
 const WORDS = [
   ["pph", "Parts per hundred of rubber: 2.5 pph sulfur means 2.5 g for every 100 g of rubber."],
@@ -234,7 +245,7 @@ const body = [
   defs,
   `<nav class="top mono-s"><a href="/">← all figures</a><span>RUBBER / DATA-DRIVEN FORMULATION</span><button type="button" data-theme-toggle>theme</button></nav>`,
   `<header><h1>Eleven rubber recipes, one model, a twelfth recipe on demand</h1><p class="dek">What a 2022 natural-rubber paper does, how its pieces work, and how an engineer can get the most out of reading it.</p></header>`,
-  `<div class="prose lead"><p>This 2022 paper from the University of Wisconsin-Madison learns natural-rubber recipes from a very small experimental dataset, then runs the learned model backwards to propose a recipe for a target set of properties. It is a surrogate-modelling and inverse-design paper set in a rubber lab, and it reads best as one.</p><p>For an engineer the most useful order is: the inputs and outputs of the function being learned, how every row of data was produced, which model sits on which rung and what each costs, how the inverse step works, and then what the evidence does not support. The page follows that order. Every figure is redrawn; the numbers are the paper's. Where a value was read off a plot, the page says so.</p></div>`,
+  `<div class="prose lead"><p>This 2022 paper from the University of Wisconsin-Madison learns natural-rubber recipes from a very small experimental dataset, then runs the learned model backwards to propose a recipe for a target set of properties. It is a surrogate-modelling and inverse-design paper set in a rubber lab, and it reads best as one.</p><p>For an engineer the most useful order is: the inputs and outputs of the function being learned, how every row of data was produced, which model sits on which rung and what each costs, how the inverse step works, and then what the evidence does not support. The page follows that order. Every figure is redrawn; the numbers are the paper's. Where a value was read off a plot, the page says so. The last section lists all 34 of the paper's figures and what each one shows.</p></div>`,
   words,
   section("What problem is this?", p("A formulator picks sulfur, oil and a foaming level, bakes it, measures it, and tries again. Skill means fewer laps. The paper's claim is that you can learn a function f: recipe → properties from a small dataset, then run it backwards: say what you want, get a recipe to try first.")),
   fig("loops", "two loops", loops(), `<p class="cap-t">The left loop is a person. The right loop is the same loop with a model standing in for most of the laps.</p>`),
@@ -262,6 +273,8 @@ const body = [
   `<div class="two"><div><h3>Worth reusing</h3><ul class="bul">${li(keep)}</ul></div><div><h3>Check first</h3><ul class="bul">${li(doubt)}</ul></div></div>`,
   section("As code", p("A sketch of the paper's pipeline, not the authors' code. The change worth making is to split the folds by recipe, so the score says how the model does on a recipe it has not seen.")),
   SKETCH,
+  section("Every figure in the paper, explained", p("The paper has 34 figures and 7 tables. Each figure is listed here in paper order with what it plots, how to read it and what it proves. Where this page already shows the same thing live, the card links to it.")),
+  `<div class="pf-wrap">${paperFigures()}</div>`,
   `<footer><div class="mono-s">SOURCES</div><ul>${SOURCES.map(([t, u]) => `<li><a href="${u}">${t}</a></li>`).join("")}</ul><p>Everything on this page is redrawn from the paper's text, tables and plots; no figure image is reused. Values marked read were taken off the plots and are approximate. The model proposals and R² values are printed in Tables 6 and 7.</p></footer>`,
 ].join("\n");
 
