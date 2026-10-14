@@ -1,0 +1,5 @@
+{
+  "slug": "source-control",
+  "title": "Scion: source control at agent scale",
+  "blurb": "How Anthropic's monorepo went from 2,500 to 30,000+ merges a day, why git ran out, and how an in-house system (Scion) made commits, checkouts and blame scale with the change, not the repo."
+}
