@@ -85,3 +85,57 @@ export const fix = (v, n = 2) => v.toFixed(n);
 export const money = (v) => "$" + (v >= 100 ? v.toFixed(0) : v.toFixed(2));
 export const fmtMoney = (v) => (v >= 100 ? "$" + Math.round(v).toLocaleString("en-US") : "$" + v.toFixed(2));
 export const fmtK = (v) => (v / 1000).toFixed(v >= 100000 ? 0 : 0) + "k";
+
+// ── the repo itself: the best-of-agent-harnesses list, snapshot 2026-10-11 ──
+// These are the repo's own published figures (README, harnesses.json, the comparison guides).
+export const REPO = {
+  name: "best-of-Agent-Harnesses",
+  url: "https://github.com/RyanAlberts/best-of-Agent-Harnesses",
+  snapshot: "2026-10-11",
+  ranked: 166,
+  graveyard: 4,
+  radar: 24,
+  // twelve ranked categories, count descending (README "Contents")
+  categories: [
+    ["Frameworks", 26],
+    ["Coding agent products", 24],
+    ["Plugins, MCPs, CLI", 19],
+    ["Evaluation & benchmarking", 19],
+    ["Coding harness configs", 17],
+    ["Libraries & SDKs", 14],
+    ["Personal agent runtimes", 13],
+    ["Multi-agent & orchestration", 12],
+    ["Progressive disclosure", 8],
+    ["Memory and state", 5],
+    ["Research & task-specific", 5],
+    ["Observability & eval-ops", 4],
+  ],
+  // published measurements: same weights on both ends of every row
+  spread: [
+    ["ARC-AGI-3", "long-horizon", 30, 95.5],
+    ["SWE-bench Pro", "GLM-5.2", 23, 52],
+    ["SWE-bench Pro", "Gemma 4 26B", 15, 36],
+    ["Cursor benchmark", "same model", 46, 80],
+  ],
+  rankTransfer: -0.05,
+  metaHarness: { points: 7.7, tokens: 4 },
+  arcBurnUsd: 5000,
+  skills: 10,
+  templates: 3,
+  playbooks: 2,
+  skeletons: 3,
+};
+
+// ── the toolbelt: the repo's ten skills, what each hands back ───────────────
+export const SKILLS = [
+  ["harness-test-drive", "pick", ["pass rate, minutes,", "dollars per pass"]],
+  ["agents-md-checker", "set up", ["which files each", "agent really loads"]],
+  ["tool-design-checker", "set up", ["a grade per tool,", "its token load"]],
+  ["guardrail-tester", "keep safe", ["dangerous commands", "your rules stop"]],
+  ["runaway-guard", "keep safe", ["stops on loops,", "failure or cost caps"]],
+  ["sandbox-check", "keep safe", ["what your agent", "can reach right now"]],
+  ["claim-check", "check work", ["'tests pass' claims", "with no real run"]],
+  ["rules-to-guards", "check work", ["broken rules turned", "into tested hooks"]],
+  ["session-waste-report", "costs", ["where tokens and $", "go, with a fix each"]],
+  ["regression-finder", "changed", ["the update where", "behavior changed"]],
+];

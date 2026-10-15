@@ -7,13 +7,14 @@ import * as A from "../../kit/audit.mjs";
 import { kitScript, latheScript } from "../../scripts/inline-kit.mjs";
 import * as M from "./model.mjs";
 import * as SH from "./shared.mjs";
+import * as D from "./diagrams.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2);
 const flag = (name) => argv.includes(name);
 const option = (name) => (argv.includes(name) ? argv[argv.indexOf(name) + 1] : undefined);
 const THEME = flag("--dark") ? "dark" : "light";
-const OUT = option("--out") ?? join(HERE, "..", "..", "dist", "always-on", "index.html");
+const OUT = option("--out") ?? join(HERE, "..", "..", "dist", "agent-harnesses", "index.html");
 const DEG = Math.PI / 180;
 
 // ───────────────────────────── world ─────────────────────────────
@@ -794,7 +795,7 @@ const keys = [
 ];
 const stage = `<div class="ao-stage" tabindex="0" role="group" aria-label="The always-on desk. Keys 1, 2 and 3 flip the wake gate, tier routing and the slimmed tool list; R restarts the day.">${svg}</div><span class="ao-live" aria-live="polite" data-announce></span>`;
 const figure = k.plateHtml({
-  fig: "Fig 1",
+  fig: "always-on",
   title: "the always-on desk",
   hint: "flip the three switches · keys 1 2 3",
   readout: "raw day: $15.48",
@@ -830,22 +831,50 @@ const namespaced = (name, file) => {
 const LIVE = readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", JSON.stringify(DATA));
 const SCRIPT = [kitScript(), latheScript(), namespaced("MODEL", join(HERE, "model.mjs")), namespaced("SHARED", join(HERE, "shared.mjs")), LIVE].join("\n");
 
-const DIAGRAMS = await import("./diagrams.mjs").then((mod) => mod.panels(M)).catch(() => "");
-const PROSE = `
-<div class="ao-prose">
-<p class="ao-lead">A local agent that never sleeps burns money while it waits. The repo's field reports all tell the same story: a poll loop left on the raw setting costs about $0.50 an hour (≈$360 a month), and three fixes take it under $5.</p>
-${DIAGRAMS}
-</div>`;
+const SEC = (title, text) => `<div class="prose"><h2>${title}</h2><p>${text}</p></div>`;
+const FIG = (key, label, inner, cap = "") =>
+  `<figure id="${key}"><div class="fh"><b>${key.toUpperCase()}</b><span>[ ${label} ]</span></div>${inner}${cap ? `<div class="ff"><p class="cap-t">${cap}</p></div>` : ""}</figure>`;
+
+const LEAD = `<div class="prose lead"><p>Based on the <b>best-of-agent-harnesses</b> repo: a hand-curated, ranked list of the runtimes that turn a model into a working agent. Every number here is the repo's; every drawing is redrawn.</p></div>`;
+
+const SECTIONS = [
+  SEC("What a harness is", "A model answers; an agent acts. The harness is everything around the loop: which tools exist, what needs approval, what the model sees each turn, what survives a crash."),
+  FIG("anatomy", "the seven parts of a minimal harness", D.anatomy(M), "After the repo's minimal-harness template, about 180 lines of Python. Each station notes what the big harnesses add."),
+  SEC("The harness moves the score more than the model", "Hold the weights fixed and swap only the harness: four published measurements, four benchmarks."),
+  FIG("spread", "same model weights, only the harness changes", D.spread(M), "Because harness rankings barely transfer between models, the pick is a pairing to re-ask whenever the model changes."),
+  SEC("The field", "166 ranked projects in twelve categories, one dot per project. Stars refresh weekly; scores are editorial, from public docs."),
+  FIG("field", "one dot per ranked project", D.landscape(M), "Outside the ranked count sit the graveyard (archived upstream, or flagged for curation integrity) and the radar, weekly finds waiting for a vetting pass."),
+  SEC("How to pick one", "Six questions, in order. Each eliminates most of the list; by the last one you should be choosing between two or three projects."),
+  FIG("pick", "six questions, in order", D.pick(M), "The ladders are the repo's own tiers. Question five is where the bill shape gets priced."),
+  SEC("Prove it on your own repos", "Leaderboards measure someone else's repositories. The protocol is an afternoon to set up and about two weeks to run."),
+  FIG("drive", "the two-week test drive", D.drive(M), "The walk-away test on the winner prices your exit: export what you built and time the runner-up on it."),
+  SEC("The toolbelt", "Ten skills that run on your own setup and hand back a number you can check: what your agent loads, reaches, claims, and wastes."),
+  FIG("skills", "ten skills, each hands back a number", D.toolbelt(M), "A Python script does the checking; your data stays on your machine; the agent explains the result."),
+  SEC("Start from a template", "Three files to copy into a project, two step-by-step playbooks, three agent skeletons that run on the subscription you already pay for."),
+  FIG("start", "templates, playbooks, skeletons", D.starter(M), "The minimal harness is the loop, three tools, a permission gate, a context file, a turn budget, and a transcript you can resume after a crash."),
+  SEC("One thread worked all the way down: always-on", "The repo's field reports price one question in detail. An agent that never sleeps burns money while it waits: about $360 a month on the raw setting, under $10 after three fixes, in priority order: wake less, route by tier, slim the tool list."),
+  figure,
+  FIG("bill", "the bill, four settings", D.billLadder(M), "A log scale; the dashed line is the $0.50/hour field report left on for a month."),
+  FIG("gate", "one day of signals through the gate", D.dayGrid(M), "The gate wakes a model only when a script finds something; a person's message always counts as something."),
+  FIG("engines", "three engines by price", D.tiers(M), "Routing by tier sends background work to the cheap engine and never puts a frontier model on a timer."),
+  FIG("guard", "the guard's trip wires", D.guardWires(M), "runaway-guard's defaults: a hook stops the session on repeats, failure streaks, or the daily cap."),
+  SEC("How the list stays honest", "Nightly stars, one hand-edited queue, a generator that validates every researched attribute file, an integrity check that fails the build, and a weekly rescore."),
+  FIG("pipeline", "how the list stays fresh", D.pipeline(M), "One queue in; the README, the data files, the charts, and the MCP server's answers out."),
+  FIG("rubric", "the deep-dive rubric", D.rubric(M), "Five axes per researched project, every rating carrying an evidence URL, validated on every build."),
+].join("\n");
+
+const FOOTER = `<footer><div class="mono-s">SOURCE</div><ul><li><a href="${M.REPO.url}">best-of-agent-harnesses</a> · Ryan Alberts · data snapshot ${M.REPO.snapshot}; every diagram here is redrawn</li></ul></footer>`;
 const THEME_INIT = `<script>try{var t=new URLSearchParams(location.search).get("theme")||localStorage.getItem("iso-theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");document.body.dataset.theme=t}catch(e){}</script>`;
 const THEME_TOGGLE = `document.querySelector("[data-theme-toggle]")?.addEventListener("click",()=>{const next=document.body.dataset.theme==="dark"?"light":"dark";document.body.dataset.theme=next;try{localStorage.setItem("iso-theme",next)}catch(e){}});`;
 const CSS = readFileSync(join(HERE, "..", "fingerprint-sieve", "fp.css"), "utf8") + readFileSync(join(HERE, "ao.css"), "utf8");
 const body =
   `${THEME_INIT}<style>${CSS}</style>` +
   `<nav class="ao-nav"><a href="/">← All figures</a><button type="button" data-theme-toggle>Theme</button></nav>` +
-  `<header class="ao-head"><h1>The always-on desk</h1><p>A dispatch machine for a personal agent that runs all day: one intake, one gate, three sizes of engine, a sandbox, a printer for your chat apps, and a guard on the bill. Flip the three switches to take a $360/month habit down to pocket change.</p></header>` +
-  figure +
-  PROSE;
-const page = k.pageHtml({ title: "The always-on desk", theme: THEME, body, width: 980, script: SCRIPT + "\n" + THEME_TOGGLE });
+  `<header class="ao-head"><h1>Agent harnesses: what they are, how to pick one, what a day costs</h1><p>The whole best-of-agent-harnesses field guide on one page: the seven parts of a harness, the measurements where it beats the model, the ranked field, the six questions, ten skills, three templates, and a working desk for the always-on problem.</p></header>` +
+  LEAD +
+  SECTIONS +
+  FOOTER;
+const page = k.pageHtml({ title: "Agent harnesses: field guide", theme: THEME, body, width: 980, script: SCRIPT + "\n" + THEME_TOGGLE });
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, page);
 console.log("wrote", OUT, `${(page.length / 1024).toFixed(0)} KB`, `${items.length} items`);
