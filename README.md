@@ -6,6 +6,7 @@ cannot disagree.
 
 | Figure | Page |
 |---|---|
+| How an always-on agent pays for itself: a dispatch desk that wakes on signals instead of a timer, a wake gate, three engines, a sandbox, a chat printer, a guard on the bill, and six panels underneath (the bill ladder, one day of signals dot by dot, engine prices, the guard's trip wires, the minimal harness, the repo's own pipeline) | `/always-on/` |
 | How a B-2 flies without a tail: a flying wing on a test bench, stick, flight computers, nine trailing-edge surfaces, buried engines, a rotary launcher | `/b2-spirit/` |
 | How browser fingerprinting works: a sieve machine, a sequence, a request in DevTools, a MacBook with callouts, four Hairline line figures (halving, canvas, needle, survives), a crowd chart, a tracker log, three browsers, and a live probe of your own | `/fingerprint-sieve/` |
 | How a natural-rubber formulation paper works, read by a developer: knob board, lab pipeline, the four measurements, a correlation matrix, a model ladder, a live Gaussian process, the reverse-engineering step, four Hairline line figures (slicer, press, tank, tarp) and a card for each of the paper's 34 figures | `/rubber-blend/` |
